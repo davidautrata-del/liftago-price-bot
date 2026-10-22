@@ -215,6 +215,82 @@ def search_tree(roots, wanted, children_of, describe, deadline, limit=_NODE_LIMI
             drop(leftover)
 
 
+def nth_after(roots, marker, role, nth, children_of, describe, deadline, limit=_NODE_LIMIT,
+              release=None, value=""):
+    """První (nebo n-té) tlačítko za popiskem, i když samo popisek nemá.
+
+    Potomci značky se nepočítají. Když je value, bere se návrh s tou hodnotou,
+    jinak n-tý prvek dané role za značkou.
+    """
+    def drop(node):
+        if release is not None and node is not None:
+            release(node)
+
+    if not marker or nth < 1:
+        raise AxError("AX element not found")
+    stack = [(node, 0) for node in reversed(list(roots or ()))]
+    seen = 0
+    saw_marker = False
+    marker_depth = None
+    count = 0
+    fallback = None
+    try:
+        while stack:
+            if time.monotonic() >= deadline:
+                raise AxError("AX hledání překročilo limit času")
+            node, depth = stack.pop()
+            seen += 1
+            if seen > limit:
+                drop(node)
+                raise AxError("AX hledání překročilo limit prvků")
+            keep = False
+            try:
+                if marker_depth is not None and depth <= marker_depth:
+                    marker_depth = None
+                info = describe(node) or {}
+                role_name = info.get("role") or ""
+                if role_name in SKIP_ROLES:
+                    continue
+                if not saw_marker and classify(info, marker) == "exact":
+                    saw_marker = True
+                    marker_depth = depth
+                elif saw_marker and marker_depth is None and role_name == role:
+                    texts = [info.get(key) or "" for key in ("desc", "name", "title", "value", "placeholder", "axid")]
+                    for text in texts:
+                        _refuse_order(text)
+                    if value and value in texts:
+                        keep = True
+                        drop(fallback)
+                        fallback = None
+                        for leftover, _depth in stack:
+                            drop(leftover)
+                        stack.clear()
+                        return node
+                    count += 1
+                    if not value and count == nth:
+                        keep = True
+                        for leftover, _depth in stack:
+                            drop(leftover)
+                        stack.clear()
+                        return node
+                    if value and count == nth and fallback is None:
+                        fallback = node
+                        keep = True
+                stack.extend((child, depth + 1) for child in reversed(list(children_of(node) or ())))
+            finally:
+                if not keep:
+                    drop(node)
+        if fallback is not None:
+            found = fallback
+            fallback = None
+            return found
+        raise AxError("AX element not found")
+    finally:
+        drop(fallback)
+        for leftover, _depth in stack:
+            drop(leftover)
+
+
 def _run(args, timeout=5):
     # Argumenty nejdou na příkazový řádek: osascript by je bral jako zdroj skriptu.
     proc = subprocess.run(
@@ -308,6 +384,14 @@ def press(bundle_id, wanted):
     _ax_action(bundle_id, wanted, "press")
 
 
+def press_following(bundle_id, marker, role="AXButton", nth=1, value=""):
+    """Stiskne n-tý prvek dané role za značkou. Popisek toho prvku není potřeba."""
+    log.info("AXPress po %s #%s", (marker or "")[:40], nth)
+    _refuse_order(marker)
+    _refuse_order(value)
+    _ax_action(bundle_id, marker, "after", value=value, role=role, nth=nth)
+
+
 def set_value(bundle_id, wanted, value):
     log.info("AXValue %s", (wanted or "")[:80])
     _ax_action(bundle_id, wanted, "set", value)
@@ -328,7 +412,7 @@ def process_pid(bundle_id):
         raise AxError("Zjištění procesu Liftaga překročilo 5 s") from exc
 
 
-def _ax_action(bundle_id, wanted, mode, value=""):
+def _ax_action(bundle_id, wanted, mode, value="", role="AXButton", nth=1):
     if sys.platform != "darwin":
         raise AxError("Zpřístupnění funguje jen na macOS")
     if not wanted:
@@ -344,17 +428,30 @@ def _ax_action(bundle_id, wanted, mode, value=""):
         elif mode == "set":
             accept = lambda info: (info.get("role") or "") in VALUE_ROLES
         deadline = time.monotonic() + _SEARCH_LIMIT
-        node = search_tree(
-            ax.roots(app),
-            wanted,
-            ax.children,
-            lambda el: ax.describe(el, wanted),
-            deadline,
-            release=ax.release,
-            accept_exact=accept,
-        )
+        if mode == "after":
+            node = nth_after(
+                ax.roots(app),
+                wanted,
+                role,
+                nth,
+                ax.children,
+                ax.describe_with_value,
+                deadline,
+                release=ax.release,
+                value=value,
+            )
+        else:
+            node = search_tree(
+                ax.roots(app),
+                wanted,
+                ax.children,
+                lambda el: ax.describe(el, wanted),
+                deadline,
+                release=ax.release,
+                accept_exact=accept,
+            )
         try:
-            if mode == "press":
+            if mode == "press" or mode == "after":
                 ax.perform_press(node)
             elif mode == "set":
                 ax.set_value(node, value)
@@ -511,6 +608,12 @@ class _Ax:
 
     def children(self, el):
         return self._elements(el, self.k_children)
+
+    def describe_with_value(self, el):
+        info = self.describe(el, "")
+        if (info.get("role") or "") == "AXButton":
+            info["value"] = self._string(el, self.k_value)
+        return info
 
     def describe(self, el, wanted):
         self._arm(el)

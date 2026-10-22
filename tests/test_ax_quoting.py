@@ -14,6 +14,7 @@ from mac_background import (
     AxError,
     applescript_literal,
     build_script,
+    nth_after,
     press,
     search_tree,
 )
@@ -148,6 +149,57 @@ class AxQuotingTest(unittest.TestCase):
             accept_exact=lambda info: info.get("role") in {"AXTextField", "AXButton"},
         )
         self.assertEqual(found["role"], "AXTextField")
+
+    def test_unlabeled_suggestion_is_the_button_after_the_marker(self):
+        window = {
+            "role": "AXWindow",
+            "children": [
+                {
+                    "role": "AXMenuBar",
+                    "children": [{"role": "AXButton", "desc": "Vybrat na mapě"}],
+                },
+                {
+                    "role": "AXButton",
+                    "desc": "Vybrat na mapě",
+                    "children": [{"role": "AXButton", "desc": "vnitřní"}],
+                },
+                {"role": "AXButton", "desc": "", "value": ""},
+                {"role": "AXButton", "desc": "druhý návrh"},
+            ],
+        }
+        found, described = _after([window], "Vybrat na mapě", nth=1)
+        self.assertEqual(found.get("desc"), "")
+        self.assertNotEqual(found.get("desc"), "vnitřní")
+        self.assertNotIn("druhý návrh", described)
+
+    def test_suggestion_value_beats_the_blank_button(self):
+        window = {
+            "role": "AXWindow",
+            "children": [
+                {"role": "AXButton", "desc": "Vybrat na mapě"},
+                {"role": "AXButton", "desc": "", "value": ""},
+                {"role": "AXButton", "desc": "", "value": "Letenské náměstí 1"},
+            ],
+        }
+        found, _described = _after([window], "Vybrat na mapě", nth=1, value="Letenské náměstí 1")
+        self.assertEqual(found.get("value"), "Letenské náměstí 1")
+
+
+def _after(roots, marker, nth=1, value=""):
+    described = []
+
+    def describe(node):
+        described.append(node.get("desc") if node.get("desc") is not None else node.get("role"))
+        return node
+
+    found = nth_after(
+        roots, marker, "AXButton", nth,
+        lambda node: node.get("children") or (),
+        describe,
+        time.monotonic() + 2,
+        value=value,
+    )
+    return found, described
 
 
 if __name__ == "__main__":

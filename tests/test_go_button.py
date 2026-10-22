@@ -13,6 +13,7 @@ from liftago_driver import (
     go_label_targets_odvoz,
     is_order_button,
     label_is_selected_odvoz,
+    suggestion_target,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -170,6 +171,19 @@ class GoButtonTest(unittest.TestCase):
 
     def test_hidden_intro_label_comes_from_the_selector(self):
         self.assertEqual(_exact_label(self.mac["open_search"]), "Kam pojedeme?")
+
+    def test_unlabeled_suggestion_uses_the_button_after_the_marker(self):
+        sel = self.mac["first_suggestion"]
+        self.assertEqual(sel["ax_after"], "Vybrat na mapě")
+        self.assertEqual(sel["ax_nth"], 1)
+        self.assertEqual(suggestion_target([], "", sel), ("after", "Vybrat na mapě", "AXButton", 1, ""))
+        self.assertEqual(
+            suggestion_target([], "Letenské náměstí 1", sel),
+            ("after", "Vybrat na mapě", "AXButton", 1, "Letenské náměstí 1"),
+        )
+        self.assertEqual(suggestion_target(["Nástupní adresa"], "", sel)[0], "label")
+        with self.assertRaises(RuntimeError):
+            suggestion_target(["Objednat"], "", sel)
 
     def test_sheet_note_keeps_the_real_404(self):
         exc = _EmptySelenium404()

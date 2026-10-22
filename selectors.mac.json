@@ -18,7 +18,10 @@
   },
   "first_suggestion": {
     "by": "xpath",
-    "value": "(//XCUIElementTypeButton[@label='Vybrat na mapě']/following::XCUIElementTypeButton)[1]"
+    "value": "(//XCUIElementTypeButton[@label='Vybrat na mapě']/following::XCUIElementTypeButton)[1]",
+    "ax_after": "Vybrat na mapě",
+    "ax_role": "AXButton",
+    "ax_nth": 1
   },
   "confirm_pickup": {
     "by": "predicate",

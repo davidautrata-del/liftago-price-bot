@@ -51,6 +51,31 @@ def go_label_targets_odvoz(label):
     return rest == "Odvoz vozu" or rest.startswith("Odvoz vozu ")
 
 
+def suggestion_target(names, value, sel):
+    """Jak stisknout návrh adresy. Bez popisku stačí pořadí za značkou, nebo hodnota."""
+    texts = []
+    for name in names or []:
+        cleaned = (name or "").strip()
+        if cleaned and cleaned not in texts:
+            texts.append(cleaned)
+    value = (value or "").strip()
+    if any(is_order_button(text) for text in texts) or is_order_button(value):
+        raise RuntimeError("Bot nesmí stisknout Objednat")
+    if texts:
+        return ("label", texts[0])
+    marker = ((sel or {}).get("ax_after") or "").strip()
+    role = ((sel or {}).get("ax_role") or "AXButton").strip() or "AXButton"
+    try:
+        nth = int((sel or {}).get("ax_nth") or 1)
+    except (TypeError, ValueError):
+        nth = 1
+    if marker:
+        return ("after", marker, role, nth, value)
+    if value:
+        return ("value", value)
+    raise RuntimeError("Prvek nemá popisek, v pozadí ho nelze stisknout")
+
+
 def label_is_selected_odvoz(label):
     text = (label or "").strip()
     return text.startswith("vybráno") and "Odvoz vozu" in text
@@ -373,6 +398,38 @@ class LiftagoDriver:
         self._park()
         raise last
 
+    def _press_suggestion(self, el):
+        """První návrh adresy. Nemusí mít popisek: je to tlačítko za „Vybrat na mapě“."""
+        if not self._background_mode():
+            self._press(el)
+            return
+        raw_value = ""
+        try:
+            raw_value = el.get_attribute("value") or ""
+        except Exception:  # noqa: BLE001
+            raw_value = ""
+        target = suggestion_target(self._element_names(el), raw_value, SELECTORS.get("first_suggestion"))
+        if target[0] == "label":
+            self._press(el)
+            return
+        import mac_background
+
+        self._park()
+        if target[0] != "after":
+            sel = SELECTORS.get("first_suggestion") or {}
+            target = (
+                "after",
+                (sel.get("ax_after") or "").strip(),
+                (sel.get("ax_role") or "AXButton").strip() or "AXButton",
+                int(sel.get("ax_nth") or 1),
+                target[1],
+            )
+        _kind, marker, role, nth, val = target
+        if not marker:
+            raise RuntimeError("Prvek nemá popisek, v pozadí ho nelze stisknout")
+        mac_background.press_following(config.LIFTAGO_BUNDLE_ID, marker, role, nth, val)
+        self._park()
+
     def _set_value(self, el, text):
         wanted = self._element_wanted(el)
         if not wanted:
@@ -423,7 +480,7 @@ class LiftagoDriver:
             inp.send_keys(text)
             time.sleep(2)  # počkat na našeptávač
             suggestion = _find(d, SELECTORS["first_suggestion"])
-        self._press(suggestion)
+        self._press_suggestion(suggestion)
         time.sleep(1.5)
 
     def _tap_optional(self, key, timeout=4):
