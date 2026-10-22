@@ -176,6 +176,11 @@ class GoButtonTest(unittest.TestCase):
         self.assertNotIn("terminateApp", background)
         self.assertNotIn("launchApp", background)
         self.assertIn("show_unfocused", background)
+        select = Path(ROOT / "liftago_driver.py").read_text().split("def _select_odvoz", 1)[1].split("def _collect_offers", 1)[0]
+        self.assertIn("_activate_odvoz_row", select)
+        self.assertNotIn("_press(row)", select)
+        self.assertEqual(self.mac["category_row"]["ax_title"], "Odvoz vozu")
+        self.assertIn("Řidič", self.mac["category_row"]["ax_context"])
         session = Path(ROOT / "liftago_driver.py").read_text()
         self.assertIn("skipAppKill", session)
 

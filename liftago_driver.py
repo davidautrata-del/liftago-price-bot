@@ -443,6 +443,30 @@ class LiftagoDriver:
         self._park()
         raise last
 
+    def _activate_odvoz_row(self, row):
+        """Vybere Odvoz vozu jedním zásahem na název, ne na sloučený popisek řádku.
+
+        Dlouhý popisek AXPress přijme a kategorii nevybere. V popředí se klepne
+        na řádek jako dřív. V pozadí se vezme prvek „Odvoz vozu“ v tom řádku.
+        """
+        if not self._background_mode():
+            self._press(row)
+            return
+        import mac_background
+
+        sel = SELECTORS.get("category_row") or {}
+        title = (sel.get("ax_title") or "Odvoz vozu").strip()
+        context = (sel.get("ax_context") or "Řidič vás odveze").strip()
+        try:
+            mac_background.show_unfocused(config.LIFTAGO_BUNDLE_ID, self._user_front)
+        except Exception:  # noqa: BLE001
+            log.warning("Okno Liftaga se před výběrem kategorie nepodařilo ukázat", exc_info=True)
+        time.sleep(0.4)
+        try:
+            mac_background.activate_in_row(config.LIFTAGO_BUNDLE_ID, title, context)
+        finally:
+            self._park()
+
     def _press_suggestion(self, el):
         """První návrh adresy. Nemusí mít popisek: je to tlačítko za „Vybrat na mapě“."""
         if not self._background_mode():
@@ -633,7 +657,7 @@ class LiftagoDriver:
                 if "Pouze později" in label and "Odvoz vozu" in label:
                     return False
                 if not label_is_selected_odvoz(label) and not label.lower().startswith("vybráno"):
-                    self._press(row)
+                    self._activate_odvoz_row(row)
                     presses += 1
             time.sleep(1)
         return (

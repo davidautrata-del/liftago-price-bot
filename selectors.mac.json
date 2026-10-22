@@ -34,7 +34,9 @@
   },
   "category_row": {
     "by": "predicate",
-    "value": "label CONTAINS 'Odvoz vozu Řidič'"
+    "value": "label CONTAINS 'Odvoz vozu Řidič'",
+    "ax_title": "Odvoz vozu",
+    "ax_context": "Řidič vás odveze"
   },
   "row_container_xpath": ".",
   "more_categories": {"by": "predicate", "value": "label ENDSWITH ' další'"},

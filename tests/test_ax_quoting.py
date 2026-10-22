@@ -14,9 +14,12 @@ from mac_background import (
     AxError,
     applescript_literal,
     build_script,
+    category_hit,
     nth_after,
     press,
+    row_containing,
     search_tree,
+    title_click_point,
 )
 
 ADDRESS = "Letecké muzeum Kbely, Mladoboleslavská, Praha 9"
@@ -134,6 +137,89 @@ class AxQuotingTest(unittest.TestCase):
         with self.assertRaises(AxError) as caught:
             _search([window], "Nástupní adresa", deadline=time.monotonic() - 1)
         self.assertIn("limit času", str(caught.exception))
+
+    def test_category_hit_is_the_title_not_the_combined_row(self):
+        window = {
+            "role": "AXWindow",
+            "children": [
+                {"role": "AXGroup", "desc": "jinde", "children": [
+                    {"role": "AXStaticText", "desc": "Odvoz vozu"},
+                ]},
+                {
+                    "role": "AXGroup",
+                    "desc": "Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 565 Kč za 19 min",
+                    "children": [
+                        {"role": "AXStaticText", "desc": "Odvoz vozu"},
+                        {"role": "AXStaticText", "desc": "565 Kč"},
+                        {"role": "AXStaticText", "desc": "Řidič vás odveze ve vašem voze"},
+                        {"role": "AXStaticText", "desc": "za 19 min"},
+                    ],
+                },
+                {"role": "AXButton", "desc": "Přejít k výběru řidiče"},
+                {"role": "AXButton", "desc": "Objednat"},
+            ],
+        }
+        found = category_hit(
+            [window], "Odvoz vozu", "Řidič vás odveze",
+            lambda node: node.get("children") or (),
+            lambda node: node,
+            time.monotonic() + 2,
+        )
+        self.assertEqual(found["role"], "AXStaticText")
+        self.assertEqual(found["desc"], "Odvoz vozu")
+        self.assertNotIn("Odhad ceny", found["desc"])
+
+    def test_category_hit_prefers_the_button_named_odvoz(self):
+        title = {"role": "AXStaticText", "desc": "Odvoz vozu"}
+        button = {
+            "role": "AXButton",
+            "desc": "Odvoz vozu",
+            "children": [
+                title,
+                {"role": "AXStaticText", "desc": "Řidič vás odveze ve vašem voze"},
+            ],
+        }
+        found = category_hit(
+            [{"role": "AXWindow", "children": [button]}],
+            "Odvoz vozu",
+            "Řidič vás odveze",
+            lambda node: node.get("children") or (),
+            lambda node: node,
+            time.monotonic() + 2,
+        )
+        self.assertIs(found, button)
+
+    def test_combined_row_click_aims_at_the_title(self):
+        group = {
+            "role": "AXGroup",
+            "desc": "Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 565 Kč za 19 min",
+        }
+        window = {
+            "role": "AXWindow",
+            "children": [
+                group,
+                {"role": "AXButton", "desc": "Přejít k výběru řidiče"},
+            ],
+        }
+        found = row_containing(
+            [window], "Odvoz vozu", "Řidič vás odveze",
+            lambda node: node.get("children") or (),
+            lambda node: node,
+            time.monotonic() + 2,
+        )
+        self.assertIs(found, group)
+        x, y = title_click_point(1003, -820, 1006, 63, False)
+        self.assertLess(x - 1003, 120)
+        self.assertLess(y - (-820), 30)
+        self.assertNotAlmostEqual(x, 1003 + 503, delta=50)
+
+    def test_category_click_does_not_move_the_pointer(self):
+        src = Path(mac_background.__file__).read_text(encoding="utf-8")
+        self.assertIn("CGEventPostToPid", src)
+        self.assertIn("CGEventSourceCreate", src)
+        self.assertNotIn("CGEventPost(", src)
+        self.assertNotIn("CGWarpMouseCursorPosition", src)
+        self.assertNotIn("kAX", src)
 
     def test_press_prefers_a_button_over_a_static_label(self):
         window = {

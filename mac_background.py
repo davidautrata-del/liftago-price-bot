@@ -82,6 +82,8 @@ AX_ATTRIBUTE_NAMES = {
     "placeholder": "AXPlaceholderValue",
     "focused": "AXFocused",
     "press": "AXPress",
+    "position": "AXPosition",
+    "size": "AXSize",
 }
 _SEARCH_LIMIT = 8
 _NODE_LIMIT = 8000
@@ -378,10 +380,237 @@ def element_exists(bundle_id, wanted):
     return True
 
 
+def _field_texts(info):
+    texts = []
+    for key in ("desc", "name", "title", "value"):
+        text = (info.get(key) or "").replace("\u00a0", " ").strip()
+        if text and text not in texts:
+            texts.append(text)
+    return texts
+
+
+def _hit_rank(role):
+    if role == "AXButton":
+        return 0
+    if role in ("AXRadioButton", "AXCheckBox"):
+        return 1
+    if role == "AXStaticText":
+        return 2
+    return 3
+
+
+def category_hit(roots, title, context, children_of, describe, deadline, limit=_NODE_LIMIT,
+                 release=None):
+    """Prvek, který kategorii vybere. Ne sloučený popisek celého řádku.
+
+    Sloučený popisek („Odvoz vozu Řidič… Odhad ceny…“) AXPress přijme a nic
+    nevybere. Vybere prvek, jehož popisek je přesně `title` a ve stejném řádku
+    je `context`. Tlačítko s tím jménem má přednost před textem.
+    """
+    title = (title or "").strip()
+    context = (context or "").strip()
+    if not title or not context:
+        raise AxError("AX element not found")
+    state = {"seen": 0, "best": None, "rank": 99}
+
+    def drop(node):
+        if release is not None and node is not None:
+            release(node)
+
+    def row_has_context(node, parent):
+        extra = []
+        if parent is not None:
+            extra.extend(list(children_of(parent) or ()))
+        extra.extend(list(children_of(node) or ()))
+        try:
+            parts = []
+            for item in extra:
+                parts.extend(_field_texts(describe(item) or {}))
+            return context in " ".join(parts)
+        finally:
+            for item in extra:
+                if item is not node and item is not parent and item is not state["best"]:
+                    drop(item)
+
+    def visit(node, parent):
+        if time.monotonic() >= deadline:
+            drop(node)
+            raise AxError("AX hledání překročilo limit času")
+        state["seen"] += 1
+        if state["seen"] > limit:
+            drop(node)
+            raise AxError("AX hledání překročilo limit prvků")
+        keep = False
+        try:
+            info = describe(node) or {}
+            role = info.get("role") or ""
+            if role in SKIP_ROLES:
+                return
+            texts = _field_texts(info)
+            if title in texts and row_has_context(node, parent):
+                rank = _hit_rank(role)
+                if rank < state["rank"]:
+                    previous = state["best"]
+                    state["best"] = node
+                    state["rank"] = rank
+                    keep = True
+                    if previous is not None:
+                        drop(previous)
+            kids = list(children_of(node) or ())
+            seen_kids = 0
+            try:
+                for kid in kids:
+                    seen_kids += 1
+                    visit(kid, node)
+            except Exception:
+                for kid in kids[seen_kids:]:
+                    if kid is not state["best"]:
+                        drop(kid)
+                raise
+        finally:
+            if not keep and node is not state["best"]:
+                drop(node)
+
+    try:
+        for root in list(roots or ()):
+            visit(root, None)
+        found = state["best"]
+        state["best"] = None
+        if found is None:
+            raise AxError("AX element not found")
+        return found
+    finally:
+        if state["best"] is not None:
+            drop(state["best"])
+
+
+def row_containing(roots, title, context, children_of, describe, deadline, limit=_NODE_LIMIT,
+                   release=None):
+    """Řádek, jehož vlastní popisek obsahuje název i popis. Samotný název to není."""
+    title = (title or "").strip()
+    context = (context or "").strip()
+    state = {"seen": 0, "best": None}
+
+    def drop(node):
+        if release is not None and node is not None:
+            release(node)
+
+    def visit(node):
+        if time.monotonic() >= deadline:
+            drop(node)
+            raise AxError("AX hledání překročilo limit času")
+        state["seen"] += 1
+        if state["seen"] > limit:
+            drop(node)
+            raise AxError("AX hledání překročilo limit prvků")
+        keep = False
+        try:
+            info = describe(node) or {}
+            if (info.get("role") or "") in SKIP_ROLES:
+                return
+            blob = " ".join(_field_texts(info))
+            if title in blob and context in blob and blob != title and state["best"] is None:
+                state["best"] = node
+                keep = True
+            kids = list(children_of(node) or ())
+            seen_kids = 0
+            try:
+                for kid in kids:
+                    seen_kids += 1
+                    if state["best"] is None:
+                        visit(kid)
+                    else:
+                        drop(kid)
+            except Exception:
+                for kid in kids[seen_kids:]:
+                    if kid is not state["best"]:
+                        drop(kid)
+                raise
+        finally:
+            if not keep and node is not state["best"]:
+                drop(node)
+
+    try:
+        for root in list(roots or ()):
+            if state["best"] is None:
+                visit(root)
+            else:
+                drop(root)
+        found = state["best"]
+        state["best"] = None
+        if found is None:
+            raise AxError("AX element not found")
+        return found
+    finally:
+        if state["best"] is not None:
+            drop(state["best"])
+
+
+def title_click_point(left, top, width, height, on_title):
+    """Bod zásahu. U celého řádku je to název vlevo nahoře, ne střed řádku."""
+    if width < 2 or height < 2:
+        raise AxError("Prvek kategorie nemá plochu")
+    if on_title:
+        return left + width / 2.0, top + height / 2.0
+    x = min(left + min(96.0, max(width * 0.08, 8.0)), left + width - 1)
+    y = min(top + min(24.0, max(height * 0.35, 4.0)), top + height - 1)
+    return x, y
+
+
 def press(bundle_id, wanted):
     log.info("AXPress %s", (wanted or "")[:80])
     _refuse_order(wanted)
     _ax_action(bundle_id, wanted, "press")
+
+
+def activate_in_row(bundle_id, title, context):
+    """Jednou vybere kategorii. Tlačítko s přesným jménem dostane AXPress.
+
+    Text uvnitř řádku (ten, který AXPress na dlouhém popisku nevybere) dostane
+    jeden klik jen do procesu Liftaga. Kurzor se neposouvá a okno se neaktivuje.
+    """
+    _refuse_order(title)
+    _refuse_order(context)
+    if sys.platform != "darwin":
+        raise AxError("Zpřístupnění funguje jen na macOS")
+    pid = process_pid(bundle_id)
+    ax = _Ax()
+    app = None
+    node = None
+    try:
+        app = ax.application(pid)
+        deadline = time.monotonic() + _SEARCH_LIMIT
+
+        def describe(el):
+            return ax.describe(el, title)
+
+        on_title = True
+        try:
+            node = category_hit(
+                ax.roots(app), title, context, ax.children, describe,
+                deadline, release=ax.release,
+            )
+        except AxError as err:
+            if "not found" not in str(err):
+                raise
+            on_title = False
+            node = row_containing(
+                ax.roots(app), title, context, ax.children, describe,
+                time.monotonic() + _SEARCH_LIMIT, release=ax.release,
+            )
+        info = ax.describe(node, title) or {}
+        if on_title and (info.get("role") or "") == "AXButton":
+            log.info("AXPress %s", (title or "")[:80])
+            ax.perform_press(node)
+            return
+        log.info("AXClick %s", (title or "")[:80])
+        left, top, width, height = ax.frame(node)
+        click_x, click_y = title_click_point(left, top, width, height, on_title)
+        _click_pid(pid, click_x, click_y)
+    finally:
+        ax.release(node)
+        ax.release(app)
+        ax.close()
 
 
 def press_following(bundle_id, marker, role="AXButton", nth=1, value=""):
@@ -488,6 +717,8 @@ class _Ax:
             self.k_placeholder = self._name("placeholder")
             self.k_focused = self._name("focused")
             self.k_press = self._name("press")
+            self.k_position = self._name("position")
+            self.k_size = self._name("size")
             self.k_true = ctypes.c_void_p.in_dll(self.cf, "kCFBooleanTrue")
             self._string_tid = self.cf.CFStringGetTypeID()
             self._array_tid = self.cf.CFArrayGetTypeID()
@@ -507,6 +738,8 @@ class _Ax:
         ax.AXUIElementSetAttributeValue.restype = ctypes.c_int32
         ax.AXUIElementPerformAction.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
         ax.AXUIElementPerformAction.restype = ctypes.c_int32
+        ax.AXValueGetValue.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p]
+        ax.AXValueGetValue.restype = ctypes.c_bool
         ax.AXUIElementSetMessagingTimeout.argtypes = [ctypes.c_void_p, ctypes.c_float]
         ax.AXUIElementSetMessagingTimeout.restype = ctypes.c_int32
         cf.CFStringCreateWithCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32]
@@ -641,6 +874,29 @@ class _Ax:
         if err != 0:
             raise AxError(f"AXPress selhal ({err})")
 
+    def frame(self, el):
+        """Levý horní roh a rozměr v souřadnicích obrazovky. Typ bodu je 1, rozměr 2."""
+        self._arm(el)
+        origin = self._ax_value(el, self.k_position, 1)
+        size = self._ax_value(el, self.k_size, 2)
+        if origin is None or size is None:
+            raise AxError("Prvek kategorie nemá polohu")
+        return origin[0], origin[1], size[0], size[1]
+
+    def _ax_value(self, el, attr, kind):
+        ref = self._copy(el, attr)
+        if not ref:
+            return None
+        try:
+            buf = CGPoint() if kind == 1 else CGSize()
+            if not self.ax.AXValueGetValue(ref, kind, ctypes.byref(buf)):
+                return None
+            if kind == 1:
+                return (float(buf.x), float(buf.y))
+            return (float(buf.width), float(buf.height))
+        finally:
+            self.cf.CFRelease(ref)
+
     def set_value(self, el, text):
         self._arm(el)
         made = self.cf.CFStringCreateWithCString(None, str(text).encode("utf-8"), _UTF8)
@@ -658,6 +914,42 @@ class _Ax:
         err = self.ax.AXUIElementSetAttributeValue(el, self.k_focused, self.k_true)
         if err != 0:
             raise AxError(f"AX fokus selhal ({err})")
+
+
+class CGPoint(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_double), ("y", ctypes.c_double)]
+
+
+class CGSize(ctypes.Structure):
+    _fields_ = [("width", ctypes.c_double), ("height", ctypes.c_double)]
+
+
+def _click_pid(pid, x, y):
+    """Jeden levý klik jen do procesu. Soukromý zdroj kurzor neposune."""
+    cg, cf = _frameworks()
+    cg.CGEventSourceCreate.argtypes = [ctypes.c_int32]
+    cg.CGEventSourceCreate.restype = ctypes.c_void_p
+    cg.CGEventCreateMouseEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint32, CGPoint, ctypes.c_uint32]
+    cg.CGEventCreateMouseEvent.restype = ctypes.c_void_p
+    cg.CGEventPostToPid.argtypes = [ctypes.c_int32, ctypes.c_void_p]
+    source = cg.CGEventSourceCreate(-1)
+    down = up = None
+    try:
+        point = CGPoint(float(x), float(y))
+        down = cg.CGEventCreateMouseEvent(source, 1, point, 0)
+        up = cg.CGEventCreateMouseEvent(source, 2, point, 0)
+        if not down or not up:
+            raise AxError("Klik na kategorii nejde sestavit")
+        cg.CGEventPostToPid(int(pid), down)
+        time.sleep(0.05)
+        cg.CGEventPostToPid(int(pid), up)
+    finally:
+        if down:
+            cf.CFRelease(down)
+        if up:
+            cf.CFRelease(up)
+        if source:
+            cf.CFRelease(source)
 
 
 def type_to_pid(bundle_id, text):
