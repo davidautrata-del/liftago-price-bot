@@ -13,6 +13,7 @@ from liftago_driver import (
     go_label_targets_odvoz,
     is_order_button,
     label_is_selected_odvoz,
+    selection_step,
     suggestion_target,
 )
 
@@ -120,9 +121,15 @@ class GoButtonTest(unittest.TestCase):
         self.assertTrue(any("Odvoz vozu Řidič" in label for label in self.labels))
         self.assertTrue(any(label.startswith("vybráno Liftago") for label in self.labels))
 
-    def test_failure_screen_selects_before_pressing(self):
+    def test_visible_go_button_is_pressed_without_another_row_tap(self):
         self.assertIn("Přejít k výběru řidiče", self.labels)
-        self.assertEqual(assess_category_screen(self.labels), "select")
+        self.assertEqual(assess_category_screen(self.labels), "press")
+        self.assertEqual(selection_step("press", 0), "done")
+        self.assertEqual(selection_step("press", 3), "done")
+        row_only = ["Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 805 Kč za 6 min"]
+        self.assertEqual(assess_category_screen(row_only), "select")
+        self.assertEqual(selection_step("select", 0), "press_row")
+        self.assertEqual(selection_step("select", 1), "wait")
         selected = [
             "vybráno Odvoz vozu Řidič vás odveze ve vašem voze" if label.startswith("vybráno") else label
             for label in self.labels
