@@ -38,11 +38,13 @@ Při výpadku se řádky odešlou při dalším běhu. Alternativa je service ac
 ```bash
 .venv/bin/python scheduler.py --plan        # dnešní plán
 MOCK=1 .venv/bin/python run_once.py         # test bez appky
-.venv/bin/python run_once.py                # jedno ostré měření (Appium musí běžet)
+.venv/bin/python run_once.py                # jedno ostré měření (Appium si scheduler umí spustit sám)
 ```
-Trvalý běh, varianta A (jednodušší): v Terminálu `caffeinate -i .venv/bin/python scheduler.py`; okno nech otevřené. Scheduler si sám spustí Appium.
-Varianta B: `./deploy/install_launchd.sh install` (spustí se po přihlášení). Pozor: oprávnění Zpřístupnění a Nahrávání obrazovky se u procesů spouštěných launchd mohou přidělovat zvlášť (node, WebDriverAgentMac Runner). Když měření v logu `state/bot.log` selhávají, použij variantu A.
-Mac musí být zapnutý, odemčený a přihlášený. Slot zmeškaný o víc než 15 min se přeskočí.
+Měření na Macu běží na pozadí (`BACKGROUND=1`, výchozí). Liftago se nespouští do popředí: okno se schová, tlačítka jdou přes zpřístupnění (AXPress) a text se nastavuje přímo do pole. Myš ani fokus se nepřebírají, takže v Macu lze dál pracovat. Po měření se okno vrátí tam, kde bylo. `BACKGROUND=0` vrátí staré chování v popředí.
+
+Trvalý běh je oddělený proces: `./deploy/install_launchd.sh install` (LaunchAgent po přihlášení, log `state/bot.log`). Po změně kódu instalaci spusť znovu. Scheduler si sám, taky na pozadí, spustí Appium. Ruční alternativa ve stejném režimu: `caffeinate -i .venv/bin/python scheduler.py`.
+
+Oprávnění Zpřístupnění a Nahrávání obrazovky se u procesů spouštěných launchd mohou přidělovat zvlášť (node, WebDriverAgentMac Runner, System Events). Mac musí být zapnutý, odemčený a přihlášený. Slot zmeškaný o víc než 15 min se přeskočí.
 
 ## Poznámky
 - Ovladač pro mac2 je napsaný podle dokumentace a nebyl zkoušen na reálné appce. Čekej ladění lokátorů a případně zadávání textu.

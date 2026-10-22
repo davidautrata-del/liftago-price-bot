@@ -33,20 +33,20 @@ Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone a
 3. **Mezikroky, které se objeví jen u některých adres (oblasti s pevnými body):** tlačítko `Potvrdit adresu vyzvednutí` po výběru pickupu a `Potvrdit cíl jízdy` po výběru cíle (selektor `confirm_dropoff` je zatím odhad, neověřený).
 4. Popup `Pro koho je tato jízda?` → tlačítko `Potvrdit` (volitelný).
 5. Seznam kategorií. Řádek "Odvoz vozu" je tlačítko s popiskem `Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 550 Kč za 6 min`. Pokud už je vybraný, je to `Other` s popiskem začínajícím `vybráno`. Klepnutí na vybranou kategorii otevře info o službě, proto se neklikne. Kategorie může být schovaná pod tlačítkem `X další`. Může mít `Pouze později` (nedostupná) nebo v seznamu chybět → do sloupců se zapíše `žádný výsledek`. Cena v seznamu = **"Cena bez slevy"**.
-6. Klik na `Přejít k výběru řidiče · Odvoz vozu` (popisek musí být přesně takto). Bot čeká 20 s, sbírá všechny ceny nabídek (`Příjezd`, `Fixní cena`, `545 Kč`, tlačítko `Objednat` se nekliká). Ceny jdou do sloupce "Driver offers (CZK)" oddělené čárkou.
+6. Klik na `Přejít k výběru řidiče` až když je vybraná Odvoz vozu (starý popisek měl navíc `· Odvoz vozu`; jiná kategorie za oddělovačem se nepoužije). Bot čeká 20 s, sbírá všechny ceny nabídek (`Příjezd`, `Fixní cena`, `545 Kč`, tlačítko `Objednat` se nekliká). Ceny jdou do sloupce "Driver offers (CZK)" oddělené čárkou.
 7. Zavření: `button.close` (Zavřít) → karta s tlačítkem `Zrušit jízdu` (xpath na Button). Po zrušení se nic dalšího nezobrazí.
 
 ## Sheet
 Sloupce: Date & time, From, To, Distance (km), ETA (min), Price without discount (CZK), Driver offers (CZK), Note. Texty v datech jsou česky ("žádný výsledek", "N nabídek").
 
 ## Známé problémy a co zbývá
-1. **9:49 22. 10.: tlačítko "Přejít k výběru řidiče · Odvoz vozu" nenalezeno** (do 6 s po výběru kategorie). Zjisti důvod z `debug/*_go_button_missing.xml/png`, případně prodluž čekání nebo oprav selektor.
+1. **9:49 22. 10.: tlačítko "Přejít k výběru řidiče · Odvoz vozu" nenalezeno.** V `debug/20261022_104003_go_button_missing.xml` (stejná chyba v 10:38) má tlačítko popisek jen `Přejít k výběru řidiče`, bez koncovky `Odvoz vozu`. Vybraná byla kategorie Liftago a snímek obrazovky ukazuje Slack v popředí, takže klik myší na řádek Odvoz vozu do appky nedolehl. Selektor v `selectors.mac.json` je `label BEGINSWITH 'Přejít k výběru řidiče'`. Stiskne se až když je vybraná Odvoz vozu (`category_selected`). Starý popisek s `· Odvoz vozu` pořád platí, jiná kategorie za oddělovačem ne.
 2. Ověřit selektor `confirm_dropoff` (`Potvrdit cíl jízdy`) na adresách v polygonech (Václavské náměstí, Hlavní nádraží).
 3. První návrh v našeptávači bývá obecná ulice bez čísla. Zvážit výběr návrhu, který nejlépe odpovídá napsané adrese.
 4. ETA občas None (kategorie "Pouze později" nebo jiný formát). Ověřit.
 5. Po relaci Appium zůstává běžet `xcodebuild` / WebDriverAgentMac a macOS hlásí "Je spuštěná automatizace". `_stop_wda()` v `close()` ho zabíjí přes `pkill -f`. Ověřit, že hláška po měření mizí a následující měření fungují.
 6. Webhook musí mít v Apps Scriptu přístup **Anyone**. "Anyone within Bolt" nefunguje, bot se nepřihlašuje. Ověřit, že se řádky skutečně objevují ve sheetu (dřívější chyba `JSONDecodeError`; `sink.py` teď loguje HTTP kód a začátek odpovědi bez URL).
-7. Běh na pozadí na hlavním Macu ruší práci (okno appky se otevírá). Alternativy: samostatný Mac, nebo Android emulátor bez okna (`PLATFORM=android`, `selectors.json` je potřeba zkalibrovat, Liftago může emulátor blokovat).
+7. Běh na hlavním Macu. Výchozí je `BACKGROUND=1`: po startu relace se okno schová, akce jdou přes AXPress / nastavení hodnoty (ne myš, ne klávesy do aktivního okna) a fokus se vrací aplikaci, kterou měl uživatel otevřenou. Po měření se okno vrátí na původní místo. Plánovač i Appium jsou oddělené procesy (LaunchAgent). `BACKGROUND=0` je staré chování v popředí. Po změně kódu znovu `./deploy/install_launchd.sh install`.
 8. Volitelně přeložit texty v datech do angličtiny ("no result", "N offers").
 9. Neznámé: provozní/ToS dopad automatizace cizí appky (konzultovat interně), vytváření poptávek, které řidiči vidí, dokud se nezruší.
 

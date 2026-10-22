@@ -60,9 +60,14 @@ def ensure_appium():
         s.settimeout(1)
         if s.connect_ex((host, port)) == 0:
             return
-    log.info("Startuji Appium server")
-    subprocess.Popen(["appium", "--address", host, "--port", str(port)],
-                     stdout=open(config.STATE_DIR / "appium.log", "ab"), stderr=subprocess.STDOUT)
+    log.info("Startuji Appium server na pozadí")
+    log_path = config.STATE_DIR / "appium.log"
+    with open(log_path, "ab") as logf:
+        subprocess.Popen(
+            ["appium", "--address", host, "--port", str(port)],
+            stdout=logf, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+            start_new_session=True,
+        )
     time.sleep(8)
 
 

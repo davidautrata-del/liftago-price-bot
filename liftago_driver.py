@@ -1,5 +1,8 @@
 """Ovládání Liftago appky přes Appium. Jen zjišťuje cenu, nic neobjednává.
 
+Na Macu při BACKGROUND=1 (výchozí) běží měření na pozadí: okno se schová,
+tlačítka jdou přes AXPress a fokus i myš zůstávají uživateli.
+
 PLATFORM=mac      iPhone appka z App Store běžící na Macu s Apple Silicon (driver mac2)
 PLATFORM=android  Android telefon / emulátor (driver uiautomator2)
 """
@@ -19,10 +22,59 @@ SELECTORS = json.loads((config.BASE / _SEL_FILE).read_text())
 
 
 NO_RESULT = "žádný výsledek"
+_GO_PREFIX = "Přejít k výběru řidiče"
 
 
 class PriceNotFound(Exception):
     pass
+
+
+def is_order_button(label):
+    """Tlačítko, které by jízdu závazně objednalo. To se nesmí stisknout."""
+    text = (label or "").strip()
+    return text == "Objednat" or text.startswith("Objednat ")
+
+
+def go_label_targets_odvoz(label):
+    """Tlačítko pokračuje na řidiče kategorie Odvoz vozu.
+
+    Aktuální appka má popisek jen „Přejít k výběru řidiče“. Starší podoba
+    připojovala kategorii za „·“; jiná kategorie se nepřijme.
+    """
+    text = (label or "").replace("\u00a0", " ").strip()
+    if is_order_button(text) or not text.startswith(_GO_PREFIX):
+        return False
+    rest = text[len(_GO_PREFIX):].strip()
+    if not rest:
+        return True
+    rest = rest.lstrip("·•|–—- ").strip()
+    return rest == "Odvoz vozu" or rest.startswith("Odvoz vozu ")
+
+
+def label_is_selected_odvoz(label):
+    text = (label or "").strip()
+    return text.startswith("vybráno") and "Odvoz vozu" in text
+
+
+def assess_category_screen(labels):
+    """Co udělat na obrazovce kategorií: press, select, later, wrong_category, absent."""
+    if any(label_is_selected_odvoz(label) for label in labels):
+        if any(go_label_targets_odvoz(label) for label in labels):
+            return "press"
+        return "absent"
+    for label in labels:
+        if "Odvoz vozu" in label and "Pouze později" in label:
+            return "later"
+    has_row = any("Odvoz vozu" in label and "Řidič" in label for label in labels)
+    has_go = any(go_label_targets_odvoz(label) for label in labels)
+    wrong = any(
+        label.startswith(_GO_PREFIX) and not go_label_targets_odvoz(label) for label in labels
+    )
+    if wrong and not has_go:
+        return "wrong_category"
+    if has_row or has_go:
+        return "select"
+    return "absent"
 
 
 def _screen_texts(driver):
@@ -72,9 +124,19 @@ def _find(driver, sel, timeout=10):
 
 class LiftagoDriver:
     def __init__(self):
+        self.driver = None
+        self._user_front = None
+        self._user_mouse = None
+        self._saved_window = None
+        self._offscreen = False
         if config.MOCK:
-            self.driver = None
             return
+        if self._wants_background():
+            import mac_background
+
+            self._user_front = mac_background.frontmost_name()
+            self._user_mouse = mac_background.mouse_position()
+            self._saved_window = mac_background.window_position(config.LIFTAGO_BUNDLE_ID)
         from appium import webdriver
 
         if config.PLATFORM == "mac":
@@ -102,13 +164,26 @@ class LiftagoDriver:
                 opts.udid = config.ANDROID_UDID
             opts.new_command_timeout = 300
         self.driver = webdriver.Remote(config.APPIUM_URL, options=opts)
+        if self._background_mode():
+            # Relace mac2 appku aktivuje. Hned ji odsunout a vrátit fokus uživateli.
+            self._offscreen = True
+            self._park()
+
+    def _wants_background(self):
+        return config.PLATFORM == "mac" and config.BACKGROUND and not config.MOCK
+
+    def _background_mode(self):
+        return self._wants_background() and self.driver is not None
 
     def close(self):
         if self.driver:
             try:
+                self._restore_desktop()
                 self.driver.quit()
             finally:
                 self._stop_wda()
+                # Ukončení relace mac2 appku někdy znovu vytáhne do popředí.
+                self._restore_desktop()
 
     @staticmethod
     def _stop_wda():
@@ -131,15 +206,59 @@ class LiftagoDriver:
         except Exception:  # noqa: BLE001
             pass
 
+    def _park(self):
+        """Schová okno a vrátí fokus i myš uživateli."""
+        if not self._background_mode() or not self._offscreen:
+            return
+        import mac_background
+
+        try:
+            mac_background.hide_app(config.LIFTAGO_BUNDLE_ID, self._user_front, self._user_mouse)
+        except Exception:  # noqa: BLE001
+            log.warning("Liftago se nepodařilo schovat", exc_info=True)
+
+    def _restore_desktop(self):
+        if not self._wants_background():
+            return
+        import mac_background
+
+        self._offscreen = False
+        pos = self._saved_window or (100, 80)
+        try:
+            mac_background.place(
+                config.LIFTAGO_BUNDLE_ID, pos[0], pos[1], self._user_front, self._user_mouse,
+            )
+        except Exception:  # noqa: BLE001
+            log.warning("Okno Liftaga se nepodařilo vrátit")
+
     def _restart_app(self):
         d = self.driver
         if config.PLATFORM == "mac":
             bid = {"bundleId": config.LIFTAGO_BUNDLE_ID}
+            if self._background_mode() and self._saved_window is None:
+                import mac_background
+
+                self._saved_window = mac_background.window_position(config.LIFTAGO_BUNDLE_ID)
             try:
                 d.execute_script("macos: terminateApp", bid)
             except Exception:  # noqa: BLE001
                 pass
             time.sleep(1.5)
+            if self._background_mode():
+                import mac_background
+
+                mac_background.launch_hidden(config.LIFTAGO_BUNDLE_ID)
+                time.sleep(1.5)
+                self._offscreen = True
+                self._park()
+                try:
+                    _find(d, SELECTORS["open_search"], timeout=8)
+                except Exception:  # noqa: BLE001
+                    log.warning("Skrytý start nevidí úvod, krátce aktivuji a hned schovám")
+                    d.execute_script("macos: activateApp", bid)
+                    time.sleep(1)
+                    self._park()
+                return
             d.execute_script("macos: activateApp", bid)
         else:
             d.terminate_app(config.LIFTAGO_PACKAGE)
@@ -147,9 +266,69 @@ class LiftagoDriver:
             d.activate_app(config.LIFTAGO_PACKAGE)
         time.sleep(5)
 
+    def _element_names(self, el):
+        names = []
+        for attr in ("label", "identifier", "title", "name"):
+            try:
+                value = el.get_attribute(attr)
+            except Exception:  # noqa: BLE001
+                value = None
+            if value and value.strip() and value.strip() not in names:
+                names.append(value.strip())
+        return names
+
+    def _element_wanted(self, el):
+        names = self._element_names(el)
+        return names[0] if names else ""
+
+    def _press(self, el):
+        """Stiskne prvek. V pozadí přes AXPress, jinak kliknutím."""
+        names = self._element_names(el)
+        if any(is_order_button(name) for name in names):
+            raise RuntimeError("Bot nesmí stisknout Objednat")
+        if not self._background_mode():
+            el.click()
+            return
+        if not names:
+            raise RuntimeError("Prvek nemá popisek, v pozadí ho nelze stisknout")
+        import mac_background
+
+        self._park()
+        last = None
+        for name in names:
+            try:
+                mac_background.press(config.LIFTAGO_BUNDLE_ID, name)
+            except Exception as e:  # noqa: BLE001
+                last = e
+                continue
+            self._park()
+            return
+        self._park()
+        raise last
+
+    def _set_value(self, el, text):
+        wanted = self._element_wanted(el)
+        if not wanted:
+            raise RuntimeError("Textové pole nemá popisek")
+        import mac_background
+
+        self._park()
+        mac_background.set_value(config.LIFTAGO_BUNDLE_ID, wanted, text)
+        self._park()
+
+    def _type_to_process(self, el, text):
+        """Záložní zápis adresy přímo do procesu, když hodnota pole nespustí našeptávač."""
+        import mac_background
+
+        wanted = self._element_wanted(el)
+        mac_background.focus_element(config.LIFTAGO_BUNDLE_ID, wanted, self._user_front)
+        mac_background.type_to_pid(config.LIFTAGO_BUNDLE_ID, text)
+        self._park()
+
     def _clear_focused_field(self):
-        if config.PLATFORM == "mac":
-            # Cmd+A a Delete v aktivním poli (modifierFlags: Command = 16)
+        if config.PLATFORM == "mac" and not self._background_mode():
+            # Cmd+A a Delete jen když běžíme v popředí (modifierFlags: Command = 16).
+            # V pozadí by zkratka smazala text v aplikaci, kterou má uživatel otevřenou.
             try:
                 self.driver.execute_script(
                     "macos: keys", {"keys": [{"key": "a", "modifierFlags": 16}, "\ue017"]})
@@ -160,22 +339,37 @@ class LiftagoDriver:
         """Do (už otevřeného) pole napíše adresu a vybere první návrh z našeptávače."""
         d = self.driver
         inp = _find(d, SELECTORS[input_key])
-        inp.click()
-        if config.PLATFORM == "mac":
-            self._clear_focused_field()
+        if self._background_mode():
+            try:
+                self._set_value(inp, text)
+                suggestion = _find(d, SELECTORS["first_suggestion"], timeout=4)
+            except Exception:  # noqa: BLE001
+                log.info("Našeptávač po nastavení hodnoty nevyšel, píšu přímo do procesu")
+                self._type_to_process(inp, text)
+                suggestion = _find(d, SELECTORS["first_suggestion"], timeout=8)
         else:
-            inp.clear()
-        inp.send_keys(text)
-        time.sleep(2)  # počkat na našeptávač
-        _find(d, SELECTORS["first_suggestion"]).click()
+            inp.click()
+            if config.PLATFORM == "mac":
+                self._clear_focused_field()
+            else:
+                inp.clear()
+            inp.send_keys(text)
+            time.sleep(2)  # počkat na našeptávač
+            suggestion = _find(d, SELECTORS["first_suggestion"])
+        self._press(suggestion)
         time.sleep(1.5)
 
     def _tap_optional(self, key, timeout=4):
         """Klikne na prvek, pokud se objeví (např. popup 'Pro koho je tato jízda')."""
         try:
-            _find(self.driver, SELECTORS[key], timeout=timeout).click()
+            self._press(_find(self.driver, SELECTORS[key], timeout=timeout))
             time.sleep(1.5)
             return True
+        except RuntimeError as e:
+            if "Objednat" in str(e):
+                raise
+            log.info("Volitelný prvek %s se nepodařilo stisknout: %s", key, e)
+            return False
         except Exception:  # noqa: BLE001
             return False
 
@@ -229,10 +423,50 @@ class LiftagoDriver:
         except Exception:  # noqa: BLE001
             return None
 
+    def _odvoz_selected(self):
+        sel = SELECTORS.get("category_selected")
+        if not sel:
+            return any(label_is_selected_odvoz(t) for t in _screen_texts(self.driver))
+        try:
+            el = _find(self.driver, sel, timeout=1.5)
+        except Exception:  # noqa: BLE001
+            return False
+        parts = []
+        for attr in ("label", "title", "value", "text", "name"):
+            try:
+                value = el.get_attribute(attr)
+            except Exception:  # noqa: BLE001
+                value = None
+            if value:
+                parts.append(value)
+        return label_is_selected_odvoz(" ".join(parts))
+
+    def _select_odvoz(self):
+        """Vybere Odvoz vozu a počká, až řádek začne 'vybráno'. Už vybraný řádek nemačká."""
+        deadline = time.time() + SELECTORS.get("go_button_wait_seconds", 12)
+        presses = 0
+        while time.time() < deadline:
+            if self._odvoz_selected():
+                return True
+            row = self._find_category_row()
+            if row is None:
+                return False
+            label = row.get_attribute("label") or ""
+            if "Pouze později" in label and "Odvoz vozu" in label:
+                return False
+            if label_is_selected_odvoz(label):
+                return True
+            if presses < 3 and not label.startswith("vybráno"):
+                self._press(row)
+                presses += 1
+            time.sleep(1)
+        return self._odvoz_selected()
+
     def _collect_offers(self):
         """Počká OFFERS_WAIT s a sesbírá všechny ceny nabídek řidičů (i ty, co mezitím vyprší).
 
         Nikdy neklikáme na 'Objednat'. Vrací (poznámka, [ceny])."""
+        self._park()
         wait = SELECTORS.get("offers_wait_seconds", 20)
         end = time.time() + wait
         seen = {}  # (jméno, cena) -> příjezd; pořadí podle prvního výskytu
@@ -250,12 +484,12 @@ class LiftagoDriver:
     def _close_offers(self):
         """Zavře obrazovku nabídek (tlačítko 'Zavřít') a případně potvrdí zrušení poptávky."""
         try:
-            _find(self.driver, SELECTORS["close_offers"], timeout=5).click()
+            self._press(_find(self.driver, SELECTORS["close_offers"], timeout=5))
             time.sleep(1.5)
             if "cancel_confirm" in SELECTORS:
                 self._tap_optional("cancel_confirm", timeout=3)
-        except Exception:  # noqa: BLE001
-            log.warning("Nepodařilo se zavřít obrazovku nabídek")
+        except Exception as e:  # noqa: BLE001
+            log.warning("Nepodařilo se zavřít obrazovku nabídek: %s", e)
 
     def query(self, origin, destination, planned_km):
         """Vrátí slovník s výsledky. Při chybě uloží screenshot a vyhodí výjimku.
@@ -272,9 +506,9 @@ class LiftagoDriver:
         d = self.driver
         try:
             self._restart_app()
-            _find(d, SELECTORS["open_search"]).click()      # 'Kam pojedeme?'
+            self._press(_find(d, SELECTORS["open_search"]))  # 'Kam pojedeme?'
             time.sleep(1.5)
-            _find(d, SELECTORS["pickup_field"]).click()      # adresa vyzvednutí
+            self._press(_find(d, SELECTORS["pickup_field"]))  # adresa vyzvednutí
             time.sleep(1)
             self._type_and_pick("pickup_input", origin)
             self._tap_optional("confirm_pickup")             # 'Potvrdit adresu vyzvednutí' (jen u některých adres)
@@ -292,19 +526,34 @@ class LiftagoDriver:
             texts = self._category_texts()
             bez, _, note = parse_prices(texts)
             km, eta = parse_km(texts) or planned_km, parse_eta(texts)
-            # označit kategorii, přejít na nabídky řidičů a po čtení poptávku zavřít
-            row = _find(d, SELECTORS["category_row"])
-            if not (row.get_attribute("label") or "").startswith("vybráno"):
-                row.click()  # už vybranou kategorii neklikáme (otevřelo by se info o službě)
-                time.sleep(1)
-            # klikneme jen na přesně 'Přejít k výběru řidiče · Odvoz vozu' (jiná kategorie = nepokračovat)
+            # Vybrat Odvoz vozu (už vybraný řádek se nemačká, otevřel by info o službě).
+            # Tlačítko pokračování už kategorii v popisku nemá, proto se smí stisknout
+            # jen když je vybraná právě Odvoz vozu.
+            if not self._select_odvoz():
+                self._dump_debug("go_button_missing")
+                step = assess_category_screen(_screen_texts(d))
+                if step == "select":
+                    missing = (
+                        "kategorie Odvoz vozu se nepodařilo vybrat "
+                        "(tlačítko 'Přejít k výběru řidiče' je na obrazovce, nepoužito)"
+                    )
+                elif step == "wrong_category":
+                    missing = "tlačítko 'Přejít k výběru řidiče' patří jiné kategorii"
+                else:
+                    missing = "tlačítko 'Přejít k výběru řidiče' nenalezeno"
+                return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT, "note": missing}
             try:
-                go = _find(d, SELECTORS["go_to_drivers"], timeout=6)
+                go = _find(d, SELECTORS["go_to_drivers"], timeout=SELECTORS.get("go_button_wait_seconds", 12))
             except Exception:  # noqa: BLE001
                 self._dump_debug("go_button_missing")
                 return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT,
-                        "note": "tlačítko 'Přejít k výběru řidiče · Odvoz vozu' nenalezeno"}
-            go.click()
+                        "note": "tlačítko 'Přejít k výběru řidiče' nenalezeno"}
+            go_label = go.get_attribute("label") or ""
+            if not go_label_targets_odvoz(go_label):
+                self._dump_debug("go_button_missing")
+                return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT,
+                        "note": "tlačítko 'Přejít k výběru řidiče' patří jiné kategorii"}
+            self._press(go)
             offers_note, offers = self._collect_offers()
             self._close_offers()
             note = "; ".join(x for x in (note, offers_note) if x)

@@ -19,6 +19,8 @@ log = logging.getLogger("run_once")
 def run(bucket=None):
     origin, dest, km = pick_route(bucket)
     log.info("Trasa: %s -> %s (%.1f km)", origin, dest, km)
+    if config.PLATFORM == "mac":
+        log.info("Pozadí (bez myši a bez fokusu): %s", "ano" if config.BACKGROUND else "ne")
     drv = LiftagoDriver()
     try:
         r = drv.query(origin, dest, km)

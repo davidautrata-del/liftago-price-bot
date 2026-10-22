@@ -29,6 +29,9 @@ TIMEZONE = os.getenv("TIMEZONE", "Europe/Prague")
 # Mock režim: bez telefonu, jen vygeneruje fiktivní data (test zápisu a plánovače)
 MOCK = os.getenv("MOCK", "0") == "1"
 
+# Na Macu výchozí: měření nebere obrazovku, fokus ani myš. BACKGROUND=0 vrátí staré chování.
+BACKGROUND = os.getenv("BACKGROUND", "1" if PLATFORM == "mac" else "0") == "1"
+
 CSV_FILE = BASE / "results.csv"
 DEBUG_DIR = BASE / "debug"
 STATE_DIR = BASE / "state"
