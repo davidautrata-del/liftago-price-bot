@@ -3,7 +3,7 @@
 Otevři ve Cursoru složku `~/Documents/liftago-price-bot` a řekni mu: "Přečti CURSOR_CONTEXT.md a pokračuj podle sekce Co zbývá."
 
 ## Cíl
-Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone appka z App Store, běží na Macu s Apple Silicon) kategorii **"Odvoz vozu"** a náhodnou pražskou trasu 1–20 km. Přečte cenu, ETA a ceny nabídek řidičů a zapíše řádek do Google Sheetu.
+Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone appka z App Store, běží na Macu s Apple Silicon) kategorii **"Odvoz vozu"** a náhodnou pražskou trasu 1–30 km. Přečte cenu, ETA a ceny nabídek řidičů a zapíše řádek do Google Sheetu.
 
 ## Pravidla (nesmí se porušit)
 - Bot **nikdy neklikne na "Objednat"**. Poptávku po přečtení nabídek zruší (Zavřít → Zrušit jízdu).
@@ -22,7 +22,7 @@ Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone a
 - `selectors.mac.json`: všechny lokátory pro Mac (predicate / xpath / id). **V NSPredicate nelze použít atribut `type`**, jen `label`, `title`, `value`, `identifier`, `elementType`.
 - `selectors.json`: Android (neověřeno).
 - `parsing.py`: `parse_prices`, `parse_eta`, `parse_km`, `parse_offers`.
-- `routes.py` + `addresses.py`: pool 37 pražských adres, výběr tras podle pásem 1–3, 3–6, 6–10, 10–15, 15–20 km (OSRM, záložně haversine × 1.3).
+- `routes.py` + `addresses.py`: pool 37 pražských adres, výběr tras podle pásem 1–3, 3–6, 6–10, 10–15, 15–20, 20–25, 25–30 km (OSRM, záložně haversine × 1.3).
 - `sink.py`: zápis vždy do `results.csv`, do sheetu přes Apps Script webhook (`SHEET_WEBHOOK_URL`) nebo service account. Při výpadku fronta v `state/pending_rows.jsonl`.
 - `deploy/sheet_webhook.gs`: Apps Script (doPost, přidá řádky na list s gid 1586305980, jinak Data). `deploy/install_launchd.sh install|uninstall`: běh na pozadí po přihlášení (LaunchAgent `cz.bolt.liftago-bot`, log `state/bot.log`).
 - `inspect_ui.py`: vypíše prvky aktuální obrazovky appky (bez restartu appky). Na to se kalibrují lokátory.

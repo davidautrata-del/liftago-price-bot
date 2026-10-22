@@ -2,7 +2,7 @@
 
 Použití:
   python run_once.py                 # náhodná trasa
-  python run_once.py --bucket 2      # pásmo 6-10 km (0..4)
+  python run_once.py --bucket 2      # pásmo 6-10 km (indexy 0..6)
 """
 import argparse
 import logging

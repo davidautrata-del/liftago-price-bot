@@ -1,6 +1,6 @@
 # Liftago price bot (Odvoz vozu, Praha)
 
-Bot 10x denně v rozptýlených časech (09:30–17:00) zadá v appce Liftago kategorii "Odvoz vozu" náhodnou pražskou trasu 1–20 km (pásma 1–3, 3–6, 6–10, 10–15, 15–20 km se střídají), přečte cenu bez slevy, cenu se slevou a ETA a zapíše řádek do sheetu. Objednávku nikdy nepotvrzuje.
+Bot 10x denně v rozptýlených časech (09:30–17:00) zadá v appce Liftago kategorii "Odvoz vozu" náhodnou pražskou trasu 1–30 km (pásma 1–3, 3–6, 6–10, 10–15, 15–20, 20–25, 25–30 km se střídají), přečte cenu bez slevy, cenu se slevou a ETA a zapíše řádek do sheetu. Objednávku nikdy nepotvrzuje.
 
 Výchozí varianta: iPhone appka z App Store běžící na Macu s Apple Silicon (`PLATFORM=mac`, Appium driver mac2). Android (`PLATFORM=android`) je také podporovaný.
 

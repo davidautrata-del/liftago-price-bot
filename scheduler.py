@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import config
+from routes import BUCKETS
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
 log = logging.getLogger("scheduler")
@@ -38,7 +39,7 @@ def make_plan(day, n=config.RUNS_PER_DAY):
         center = start + (i + 0.5) * width
         minute = int(round(center + random.uniform(-jitter, jitter)))
         t = datetime(day.year, day.month, day.day, tzinfo=TZ) + timedelta(minutes=minute)
-        slots.append({"time": t.isoformat(timespec="minutes"), "bucket": i % 5, "done": False})
+        slots.append({"time": t.isoformat(timespec="minutes"), "bucket": i % len(BUCKETS), "done": False})
     return slots
 
 
