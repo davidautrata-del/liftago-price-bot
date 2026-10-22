@@ -7,6 +7,7 @@ procesu jdou jen záložně (CGEventPostToPid), nikdy do aktivního okna uživat
 """
 import ctypes
 import logging
+import re
 import subprocess
 import sys
 import time
@@ -289,6 +290,121 @@ def nth_after(roots, marker, role, nth, children_of, describe, deadline, limit=_
         raise AxError("AX element not found")
     finally:
         drop(fallback)
+        for leftover, _depth in stack:
+            drop(leftover)
+
+
+_SUGGESTION_GENERIC = frozenset({
+    "praha", "cesko", "czechia", "czech", "ulice", "trida", "namesti", "okres",
+})
+
+
+def _fold_text(text):
+    import unicodedata
+
+    raw = unicodedata.normalize("NFKD", text or "")
+    return "".join(ch for ch in raw if not unicodedata.combining(ch)).lower()
+
+
+def suggestion_tokens(text):
+    words = re.findall(r"[a-z0-9]+", _fold_text(text))
+    return [
+        word for word in words
+        if not word.isdigit() and len(word) >= 3 and word not in _SUGGESTION_GENERIC
+    ]
+
+
+def suggestion_score(query, candidate):
+    """Jak moc návrh odpovídá zadané adrese. 0 znamená, že to není ten návrh."""
+    wanted = suggestion_tokens(query)
+    folded = _fold_text(candidate)
+    if not wanted or not folded.strip():
+        return 0
+    if not re.search(rf"(?<![a-z0-9]){re.escape(wanted[0])}(?![a-z0-9])", folded):
+        return 0
+    hits = 0
+    for token in wanted:
+        if re.search(rf"(?<![a-z0-9]){re.escape(token)}(?![a-z0-9])", folded):
+            hits += 1
+    for number in re.findall(r"\d+", _fold_text(query)):
+        if re.search(rf"(?<!\d){number}(?!\d)", folded):
+            hits += 1
+            break
+    return hits
+
+
+def pick_suggestion(query, candidates):
+    """Popisek návrhu, který odpovídá adrese. Prázdné první tlačítko se nebere."""
+    best = None
+    best_score = 0
+    for candidate in candidates or []:
+        text = (candidate or "").strip()
+        if not text or text == "Objednat" or text.startswith("Objednat "):
+            continue
+        score = suggestion_score(query, text)
+        if score > best_score:
+            best = text
+            best_score = score
+    return best
+
+
+def best_after(roots, marker, query, children_of, describe, deadline, limit=_NODE_LIMIT,
+               release=None, role="AXButton"):
+    """Tlačítko za značkou, jehož text odpovídá adrese. První prázdné se nebere."""
+    def drop(node):
+        if release is not None and node is not None:
+            release(node)
+
+    if not marker or not (query or "").strip():
+        raise AxError("AX element not found")
+    stack = [(node, 0) for node in reversed(list(roots or ()))]
+    seen = 0
+    saw_marker = False
+    marker_depth = None
+    best = None
+    best_score = 0
+    try:
+        while stack:
+            if time.monotonic() >= deadline:
+                raise AxError("AX hledání překročilo limit času")
+            node, depth = stack.pop()
+            seen += 1
+            if seen > limit:
+                drop(node)
+                raise AxError("AX hledání překročilo limit prvků")
+            keep = False
+            try:
+                if marker_depth is not None and depth <= marker_depth:
+                    marker_depth = None
+                info = describe(node) or {}
+                role_name = info.get("role") or ""
+                if role_name in SKIP_ROLES:
+                    continue
+                if not saw_marker and classify(info, marker) == "exact":
+                    saw_marker = True
+                    marker_depth = depth
+                elif saw_marker and marker_depth is None and role_name == role:
+                    texts = _field_texts(info)
+                    if any(text == "Objednat" or text.startswith("Objednat ") for text in texts):
+                        pass
+                    else:
+                        score = suggestion_score(query, " ".join(texts))
+                        if score > best_score:
+                            drop(best)
+                            best = node
+                            best_score = score
+                            keep = True
+                stack.extend((child, depth + 1) for child in reversed(list(children_of(node) or ())))
+            finally:
+                if not keep:
+                    drop(node)
+        if best is None:
+            raise AxError("AX element not found")
+        found = best
+        best = None
+        return found
+    finally:
+        drop(best)
         for leftover, _depth in stack:
             drop(leftover)
 
@@ -607,6 +723,33 @@ def activate_in_row(bundle_id, title, context):
         left, top, width, height = ax.frame(node)
         click_x, click_y = title_click_point(left, top, width, height, on_title)
         _click_pid(pid, click_x, click_y)
+    finally:
+        ax.release(node)
+        ax.release(app)
+        ax.close()
+
+
+def press_best_after(bundle_id, marker, query, role="AXButton"):
+    """Stiskne návrh za značkou, který odpovídá zadané adrese. Ne první prázdné tlačítko."""
+    _refuse_order(marker)
+    _refuse_order(query)
+    if sys.platform != "darwin":
+        raise AxError("Zpřístupnění funguje jen na macOS")
+    pid = process_pid(bundle_id)
+    ax = _Ax()
+    app = None
+    node = None
+    try:
+        app = ax.application(pid)
+        deadline = time.monotonic() + _SEARCH_LIMIT
+        node = best_after(
+            ax.roots(app), marker, query, ax.children,
+            ax.describe_with_value, deadline, release=ax.release, role=role,
+        )
+        info = ax.describe(node, query) or {}
+        label = " ".join(_field_texts(info)) or query
+        log.info("AXPress %s", label[:80])
+        ax.perform_press(node)
     finally:
         ax.release(node)
         ax.release(app)

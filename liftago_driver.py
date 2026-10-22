@@ -11,6 +11,7 @@ import logging
 import random
 import re
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime
 
 import config
@@ -145,6 +146,57 @@ def selection_step(action, presses):
     if action == "select" and presses < 1:
         return "press_row"
     return "wait"
+
+
+def labels_after_marker(page_source, marker):
+    """Popisky tlačítek za posledním výskytem značky. Potomci značky se nepočítají."""
+    try:
+        root = ET.fromstring(page_source or "")
+    except ET.ParseError:
+        return []
+    ordered = []
+
+    def walk(el, depth):
+        ordered.append((depth, el))
+        for child in list(el):
+            walk(child, depth + 1)
+
+    walk(root, 0)
+    groups = []
+    current = None
+    marker_depth = None
+    for depth, el in ordered:
+        if marker_depth is not None and depth <= marker_depth:
+            marker_depth = None
+        label = (el.attrib.get("label") or "").strip()
+        if marker_depth is None and label == marker:
+            current = []
+            groups.append(current)
+            marker_depth = depth
+            continue
+        if current is None or marker_depth is not None:
+            continue
+        if not el.tag.endswith("Button"):
+            continue
+        text = label or (el.attrib.get("value") or "").strip() or (el.attrib.get("title") or "").strip()
+        current.append(text)
+    for group in reversed(groups):
+        if any(text.strip() for text in group):
+            return group
+    return groups[-1] if groups else []
+
+
+def category_list_on_screen(labels):
+    markers = ("Odhad ceny", "Přejít k výběru", "Liftago", "Řidič vás odveze", "Pouze později", "Limousine")
+    return any(any(marker in (label or "") for marker in markers) for label in labels)
+
+
+def missing_odvoz_note(labels):
+    """„Odvoz vozu v nabídce není“ jen když je seznam kategorií opravdu na obrazovce."""
+    has_odvoz = any("Odvoz vozu" in (label or "") for label in labels)
+    if category_list_on_screen(labels) and not has_odvoz:
+        return "Odvoz vozu v nabídce není"
+    return "seznam kategorií se neotevřel, návrh adresy se nepodařilo vybrat"
 
 
 def _screen_texts(driver):
@@ -528,18 +580,60 @@ class LiftagoDriver:
             except Exception:  # noqa: BLE001
                 pass
 
+    def _pick_typed_suggestion(self, text):
+        """Vybere návrh, který odpovídá zadané adrese. První prázdné tlačítko ne."""
+        from mac_background import pick_suggestion
+
+        marker = (SELECTORS.get("first_suggestion") or {}).get("ax_after") or "Vybrat na mapě"
+        deadline = time.time() + 8
+        while time.time() < deadline:
+            chosen = pick_suggestion(text, labels_after_marker(self.driver.page_source, marker))
+            if chosen:
+                try:
+                    if self._background_mode():
+                        import mac_background
+
+                        self._park()
+                        mac_background.press(config.LIFTAGO_BUNDLE_ID, chosen)
+                        self._park()
+                    else:
+                        self._press(_find(self.driver, {"by": "text", "value": chosen}, timeout=4))
+                except Exception:  # noqa: BLE001
+                    log.info("Návrh %s nejde stisknout podle popisku", chosen[:80])
+                    break
+                return True
+            time.sleep(0.4)
+        if not self._background_mode():
+            return False
+        import mac_background
+
+        self._park()
+        try:
+            mac_background.press_best_after(config.LIFTAGO_BUNDLE_ID, marker, text)
+        except Exception:  # noqa: BLE001
+            log.info("Návrh pro %s mezi tlačítky za %s není", text, marker)
+            return False
+        finally:
+            self._park()
+        return True
+
     def _type_and_pick(self, input_key, text):
-        """Do (už otevřeného) pole napíše adresu a vybere první návrh z našeptávače."""
+        """Do pole napíše adresu a vybere návrh, který té adrese odpovídá."""
         d = self.driver
         inp = _find(d, SELECTORS[input_key])
         if self._background_mode():
             try:
                 self._set_value(inp, text)
-                suggestion = _find(d, SELECTORS["first_suggestion"], timeout=4)
             except Exception:  # noqa: BLE001
-                log.info("Našeptávač po nastavení hodnoty nevyšel, píšu přímo do procesu")
+                log.info("Hodnotu pole nejde nastavit, píšu přímo do procesu")
                 self._type_to_process(inp, text)
-                suggestion = _find(d, SELECTORS["first_suggestion"], timeout=8)
+            if self._pick_typed_suggestion(text):
+                time.sleep(1.5)
+                return
+            log.info("Našeptávač po nastavení hodnoty nevyšel, píšu přímo do procesu")
+            self._type_to_process(inp, text)
+            if not self._pick_typed_suggestion(text):
+                raise RuntimeError("Návrh adresy se nepodařilo vybrat")
         else:
             inp.click()
             if config.PLATFORM == "mac":
@@ -547,9 +641,9 @@ class LiftagoDriver:
             else:
                 inp.clear()
             inp.send_keys(text)
-            time.sleep(2)  # počkat na našeptávač
-            suggestion = _find(d, SELECTORS["first_suggestion"])
-        self._press_suggestion(suggestion)
+            time.sleep(2)
+            if not self._pick_typed_suggestion(text):
+                self._press_suggestion(_find(d, SELECTORS["first_suggestion"]))
         time.sleep(1.5)
 
     def _tap_optional(self, key, timeout=4):
@@ -722,7 +816,7 @@ class LiftagoDriver:
             row = self._find_category_row()
             if row is None:
                 return {"ts": now, "km": planned_km, "eta": None, "bez": NO_RESULT,
-                        "se": NO_RESULT, "note": "Odvoz vozu v nabídce není"}
+                        "se": NO_RESULT, "note": missing_odvoz_note(_screen_texts(d))}
             label = row.get_attribute("label") or ""
             if "Pouze později" in label:
                 return {"ts": now, "km": planned_km, "eta": None, "bez": NO_RESULT,

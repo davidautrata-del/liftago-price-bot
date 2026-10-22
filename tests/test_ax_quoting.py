@@ -15,7 +15,9 @@ from mac_background import (
     applescript_literal,
     build_script,
     category_hit,
+    best_after,
     nth_after,
+    pick_suggestion,
     press,
     row_containing,
     search_tree,
@@ -269,6 +271,31 @@ class AxQuotingTest(unittest.TestCase):
         }
         found, _described = _after([window], "Vybrat na mapě", nth=1, value="Letenské náměstí 1")
         self.assertEqual(found.get("value"), "Letenské náměstí 1")
+
+    def test_destination_suggestion_is_not_the_blank_first_button(self):
+        window = {
+            "role": "AXWindow",
+            "children": [
+                {"role": "AXButton", "desc": "Vybrat na mapě"},
+                {"role": "AXButton", "desc": ""},
+                {"role": "AXButton", "desc": "Aviatická 1, Letiště Václava Havla (PRG), Praha 6, Česko"},
+                {"role": "AXButton", "desc": "Vítězné náměstí, Praha 6, Česko"},
+                {"role": "AXButton", "desc": "Objednat"},
+            ],
+        }
+        found = best_after(
+            [window],
+            "Vybrat na mapě",
+            "Vítězné náměstí 1, Praha 6",
+            lambda node: node.get("children") or (),
+            lambda node: node,
+            time.monotonic() + 2,
+        )
+        self.assertEqual(found["desc"], "Vítězné náměstí, Praha 6, Česko")
+        self.assertEqual(
+            pick_suggestion("Vítězné náměstí 1, Praha 6", ["", found["desc"]]),
+            found["desc"],
+        )
 
 
 def _after(roots, marker, nth=1, value=""):

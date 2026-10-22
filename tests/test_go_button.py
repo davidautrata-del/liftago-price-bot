@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import mac_background
+from mac_background import pick_suggestion
 from liftago_driver import (
     _exact_label,
     assess_category_screen,
@@ -13,6 +14,8 @@ from liftago_driver import (
     go_label_targets_odvoz,
     is_order_button,
     label_is_selected_odvoz,
+    labels_after_marker,
+    missing_odvoz_note,
     selection_step,
     suggestion_target,
 )
@@ -197,6 +200,30 @@ class GoButtonTest(unittest.TestCase):
             ("after", "Vybrat na mapě", "AXButton", 1, "Letenské náměstí 1"),
         )
         self.assertEqual(suggestion_target(["Nástupní adresa"], "", sel)[0], "label")
+        typed = "Vítězné náměstí 1, Praha 6"
+        labels = [
+            "",
+            "Aviatická 1, Letiště Václava Havla (PRG), Praha 6, Česko",
+            "Vítězné náměstí, Praha 6, Česko",
+        ]
+        self.assertEqual(pick_suggestion(typed, labels), "Vítězné náměstí, Praha 6, Česko")
+        self.assertIsNone(pick_suggestion(typed, ["", "Vybrat na mapě"]))
+        page = """
+        <XCUIElementTypeWindow>
+          <XCUIElementTypeButton label="Vybrat na mapě"/>
+          <XCUIElementTypeButton label=""/>
+          <XCUIElementTypeButton label="Vítězné náměstí, Praha 6, Česko"/>
+        </XCUIElementTypeWindow>
+        """
+        self.assertEqual(labels_after_marker(page, "Vybrat na mapě")[1], "Vítězné náměstí, Praha 6, Česko")
+        self.assertEqual(
+            missing_odvoz_note(["Vybrat na mapě", "Cílová adresa"]),
+            "seznam kategorií se neotevřel, návrh adresy se nepodařilo vybrat",
+        )
+        self.assertEqual(
+            missing_odvoz_note(["Liftago Všechny dostupné vozy Odhad ceny 250 Kč", "Přejít k výběru řidiče"]),
+            "Odvoz vozu v nabídce není",
+        )
         with self.assertRaises(RuntimeError):
             suggestion_target(["Objednat"], "", sel)
 
