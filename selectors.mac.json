@@ -1,0 +1,52 @@
+{
+  "_comment": "Lokátory pro iPhone appku Liftago na macOS (mac2). V predikátech nelze použít atribut 'type'. Typy: text (přesný), textcontains, id, predicate, xpath.",
+  "open_search": {
+    "by": "predicate",
+    "value": "label == 'Kam pojedeme?'"
+  },
+  "pickup_field": {
+    "by": "xpath",
+    "value": "(//XCUIElementTypeTextField)[1]"
+  },
+  "pickup_input": {
+    "by": "xpath",
+    "value": "(//XCUIElementTypeTextField)[1]"
+  },
+  "destination_input": {
+    "by": "xpath",
+    "value": "(//XCUIElementTypeTextField)[2]"
+  },
+  "first_suggestion": {
+    "by": "xpath",
+    "value": "(//XCUIElementTypeButton[@label='Vybrat na mapě']/following::XCUIElementTypeButton)[1]"
+  },
+  "confirm_pickup": {
+    "by": "predicate",
+    "value": "label == 'Potvrdit adresu vyzvednutí'"
+  },
+  "confirm_dropoff": {"by": "predicate", "value": "label BEGINSWITH 'Potvrdit cíl'"},
+  "confirm_popup": {
+    "by": "text",
+    "value": "Potvrdit"
+  },
+  "category_row": {
+    "by": "predicate",
+    "value": "label CONTAINS 'Odvoz vozu Řidič'"
+  },
+  "row_container_xpath": ".",
+  "more_categories": {"by": "predicate", "value": "label ENDSWITH ' další'"},
+  "go_to_drivers": {
+    "by": "predicate",
+    "value": "label BEGINSWITH 'Přejít k výběru řidiče' AND label ENDSWITH 'Odvoz vozu'"
+  },
+  "offers_wait_seconds": 20,
+  "close_offers": {
+    "by": "id",
+    "value": "button.close"
+  },
+  "cancel_confirm": {
+    "by": "xpath",
+    "value": "//XCUIElementTypeButton[@label='Zrušit jízdu']"
+  },
+  "price_wait_seconds": 30
+}

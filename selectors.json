@@ -1,0 +1,12 @@
+{
+  "_comment": "Lokátory pro Android Liftago (uiautomator2). Výchozí hodnoty jsou odhad; uprav je podle výstupu inspect_ui.py. Typy: text (přesný), textcontains, id, predicate, xpath.",
+  "open_search": {"by": "textcontains", "value": "Kam pojedeme"},
+  "pickup_field": {"by": "xpath", "value": "(//android.widget.EditText)[1]"},
+  "pickup_input": {"by": "xpath", "value": "(//android.widget.EditText)[1]"},
+  "destination_input": {"by": "textcontains", "value": "Zadejte cíl jízdy"},
+  "first_suggestion": {"by": "xpath", "value": "(//android.view.ViewGroup)[1]"},
+  "confirm_popup": {"by": "text", "value": "Potvrdit"},
+  "category_row": {"by": "textcontains", "value": "Odvoz vozu"},
+  "row_container_xpath": "..",
+  "price_wait_seconds": 30
+}

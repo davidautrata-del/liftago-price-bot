@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XCUIElementTypeApplication elementType="2" identifier="" label="" title="Liftago" enabled="false" selected="false" x="0" y="0" width="0" height="0">
+  <XCUIElementTypeWindow elementType="4" identifier="SceneWindow" label="" title="Liftago" enabled="false" selected="false" x="994" y="-1375" width="1024" height="781">
+    <XCUIElementTypeGroup elementType="3" identifier="" label="" title="" enabled="false" selected="false" x="994" y="-1343" width="1024" height="749">
+      <XCUIElementTypeWindow elementType="4" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+        <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+          <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+            <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+              <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                  <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                    <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                      <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                        <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                          <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                            <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                              <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                                <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                                  <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="844">
+                                    <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                                      <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="1502" y="-1357" width="135" height="45">
+                                        <XCUIElementTypeButton elementType="9" identifier="" value="Letenské nám. 1" label="Nástupní adresa" title="" enabled="true" selected="false" x="1509" y="-1350" width="122" height="31"/>
+                                        <XCUIElementTypeButton elementType="9" identifier="" label="" title="" enabled="true" selected="false" x="661" y="917" width="0" height="0"/>
+                                      </XCUIElementTypeOther>
+                                      <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750"/>
+                                      <XCUIElementTypeButton elementType="9" identifier="" label="Zpět" title="" enabled="true" selected="false" x="1006" y="-1334" width="38" height="38"/>
+                                      <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="1424" y="-1119" width="207" height="44">
+                                        <XCUIElementTypeButton elementType="9" identifier="" value="Stanoviště taxi, V cíli v 11:03" label="Cílová adresa" title="" enabled="true" selected="false" x="1430" y="-1112" width="157" height="31"/>
+                                        <XCUIElementTypeButton elementType="9" identifier="" label="Přidat zastávku" title="" enabled="true" selected="false" x="1593" y="-1112" width="31" height="31"/>
+                                      </XCUIElementTypeOther>
+                                    </XCUIElementTypeOther>
+                                    <XCUIElementTypeButton elementType="9" identifier="" value="Rozbalit kategorie vozů" label="" title="" enabled="true" selected="false" x="1490" y="-1056" width="32" height="5"/>
+                                    <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1048" width="207" height="34">
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" value="1" label="Taxi" title="" enabled="true" selected="true" x="994" y="-1048" width="54" height="34"/>
+                                      <XCUIElementTypeButton elementType="9" identifier="" value="0" label="Limousine" title="" enabled="true" selected="false" x="1047" y="-1048" width="91" height="34"/>
+                                      <XCUIElementTypeButton elementType="9" identifier="" value="0" label="Kurýr" title="" enabled="true" selected="false" x="1137" y="-1048" width="64" height="34"/>
+                                    </XCUIElementTypeOther>
+                                    <XCUIElementTypeOther elementType="1" identifier="" label="vybráno Liftago Všechny dostupné vozy Odhad ceny 250–400 Kč za 9 min Klepněte pro více informací o službě" title="" enabled="true" selected="false" x="1003" y="-1005" width="1006" height="63">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-999" width="50" height="51"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Liftago" title="" enabled="true" selected="false" x="1067" y="-989" width="42" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="250–400 Kč" title="" enabled="true" selected="false" x="1928" y="-989" width="72" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Všechny dostupné vozy " title="" enabled="true" selected="false" x="1067" y="-972" width="133" height="14"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="za ~9 min" title="" enabled="true" selected="false" x="1951" y="-972" width="49" height="14"/>
+                                    </XCUIElementTypeOther>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="Autodrive Jízda s asistovaným řízením Odhad ceny 473 Kč za 9 min" title="" enabled="true" selected="false" x="1003" y="-943" width="1006" height="62">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-937" width="50" height="50"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Autodrive" title="" enabled="true" selected="false" x="1067" y="-927" width="57" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="473 Kč" title="" enabled="true" selected="false" x="1959" y="-927" width="41" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Jízda s asistovaným řízením" title="" enabled="true" selected="false" x="1067" y="-911" width="137" height="14"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="za ~9 min" title="" enabled="true" selected="false" x="1951" y="-911" width="49" height="14"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="Premium Preference vozů vyšší třídy Odhad ceny 360–410 Kč za 11 min" title="" enabled="true" selected="false" x="1003" y="-881" width="1006" height="62">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-875" width="50" height="50"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Premium" title="" enabled="true" selected="false" x="1067" y="-865" width="53" height="15"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="360–410 Kč" title="" enabled="true" selected="false" x="1930" y="-865" width="70" height="15"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Preference vozů vyšší třídy" title="" enabled="true" selected="false" x="1067" y="-849" width="132" height="14"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="za ~11 min" title="" enabled="true" selected="false" x="1948" y="-849" width="52" height="14"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 754 Kč za 13 min" title="" enabled="true" selected="false" x="1003" y="-820" width="1006" height="63">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-814" width="50" height="51"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Odvoz vozu" title="" enabled="true" selected="false" x="1067" y="-804" width="68" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="754 Kč" title="" enabled="true" selected="false" x="1959" y="-804" width="41" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Řidič vás odveze ve vašem voze" title="" enabled="true" selected="false" x="1067" y="-788" width="157" height="15"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="za ~13 min" title="" enabled="true" selected="false" x="1946" y="-788" width="54" height="15"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="Kids 1 sedačka 0-36kg, 1 podsedák Odhad ceny 398–430 Kč za 12 min" title="" enabled="true" selected="false" x="1003" y="-758" width="1006" height="62">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-752" width="50" height="50"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Kids" title="" enabled="true" selected="false" x="1067" y="-742" width="27" height="15"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="398–430 Kč" title="" enabled="true" selected="false" x="1928" y="-742" width="72" height="15"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="1 sedačka 0-36kg, 1 podsedák" title="" enabled="true" selected="false" x="1067" y="-726" width="150" height="14"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="za ~12 min" title="" enabled="true" selected="false" x="1947" y="-726" width="53" height="14"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="Eco Preference elektromobilů a hybridních vozů Odhad ceny 250–400 Kč za 11 min" title="" enabled="true" selected="false" x="1003" y="-697" width="1006" height="63">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-691" width="50" height="51"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Eco" title="" enabled="true" selected="false" x="1067" y="-681" width="23" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="250–400 Kč" title="" enabled="true" selected="false" x="1928" y="-681" width="72" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Preference elektromobilů a hybridních vozů" title="" enabled="true" selected="false" x="1067" y="-664" width="212" height="14"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="za ~11 min" title="" enabled="true" selected="false" x="1948" y="-664" width="52" height="14"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="XXL Vozy pro 7 osob Odhad ceny 490–494 Kč Pouze později" title="" enabled="true" selected="false" x="1003" y="-635" width="1006" height="63">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-629" width="50" height="50"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="XXL" title="" enabled="true" selected="false" x="1067" y="-619" width="25" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="490–494 Kč" title="" enabled="true" selected="false" x="1927" y="-619" width="73" height="16"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Vozy pro 7 osob" title="" enabled="true" selected="false" x="1067" y="-603" width="80" height="14"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Pouze později" title="" enabled="true" selected="false" x="1931" y="-603" width="69" height="14"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="4 další" title="" enabled="true" selected="false" x="1476" y="-761" width="60" height="26">
+                                      <XCUIElementTypeImage elementType="43" identifier="arrow.down" label="Dolů" title="" enabled="true" selected="false" x="1486" y="-754" width="8" height="11"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="4 další" title="" enabled="true" selected="false" x="1497" y="-755" width="30" height="13"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" label="Jízda pro mě" title="" enabled="true" selected="false" x="1003" y="-714" width="119" height="31">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="" title="" enabled="true" selected="false" x="1009" y="-708" width="19" height="19"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Jízda pro mě" title="" enabled="true" selected="false" x="1034" y="-706" width="66" height="15"/>
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="chevron-down-small" title="" enabled="true" selected="false" x="1105" y="-704" width="10" height="11"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" value="Nevybrán žádný" label="Požadavky" title="" enabled="true" selected="false" x="1127" y="-714" width="109" height="31">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="ic_note" title="" enabled="true" selected="false" x="1133" y="-708" width="19" height="19"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Požadavky" title="" enabled="true" selected="false" x="1158" y="-706" width="56" height="15"/>
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="chevron-down-small" title="" enabled="true" selected="false" x="1219" y="-704" width="10" height="11"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" value="Hotovost" label="Platba" title="" enabled="true" selected="false" x="1003" y="-673" width="1006" height="20">
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="ic_payment_method_cash" title="" enabled="true" selected="false" x="1003" y="-673" width="19" height="20"/>
+                                      <XCUIElementTypeStaticText elementType="48" identifier="" label="Hotovost" title="" enabled="true" selected="false" x="1030" y="-670" width="48" height="14"/>
+                                      <XCUIElementTypeImage elementType="43" identifier="" label="chevron-right" title="" enabled="true" selected="false" x="1990" y="-673" width="19" height="20"/>
+                                    </XCUIElementTypeButton>
+                                    <XCUIElementTypeButton elementType="9" identifier="" value="" label="Přejít k výběru řidiče" title="" enabled="true" selected="false" x="1003" y="-644" width="963" height="38"/>
+                                    <XCUIElementTypeButton elementType="9" identifier="" value="vybráno Teď" label="Nastavit preferenci času" title="" enabled="true" selected="false" x="1971" y="-644" width="38" height="38"/>
+                                  </XCUIElementTypeOther>
+                                </XCUIElementTypeOther>
+                              </XCUIElementTypeOther>
+                            </XCUIElementTypeOther>
+                          </XCUIElementTypeOther>
+                        </XCUIElementTypeOther>
+                      </XCUIElementTypeOther>
+                      <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                        <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750"/>
+                      </XCUIElementTypeOther>
+                    </XCUIElementTypeOther>
+                  </XCUIElementTypeOther>
+                </XCUIElementTypeOther>
+              </XCUIElementTypeOther>
+              <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750">
+                <XCUIElementTypeOther elementType="1" identifier="" label="" title="" enabled="true" selected="false" x="994" y="-1343" width="1025" height="750"/>
+              </XCUIElementTypeOther>
+            </XCUIElementTypeOther>
+          </XCUIElementTypeOther>
+        </XCUIElementTypeOther>
+      </XCUIElementTypeWindow>
+    </XCUIElementTypeGroup>
+    <XCUIElementTypeButton elementType="9" identifier="_XCUI:CloseWindow" label="" title="" enabled="true" selected="false" x="1002" y="-1367" width="16" height="16"/>
+    <XCUIElementTypeButton elementType="9" identifier="_XCUI:FullScreenWindow" label="" title="" enabled="true" selected="false" x="1048" y="-1367" width="16" height="16">
+      <XCUIElementTypeGroup elementType="3" identifier="" label="" title="" enabled="false" selected="false" x="1049" y="-1366" width="14" height="14">
+        <XCUIElementTypeGroup elementType="3" identifier="" label="" title="" enabled="false" selected="false" x="1049" y="-1366" width="14" height="14"/>
+      </XCUIElementTypeGroup>
+    </XCUIElementTypeButton>
+    <XCUIElementTypeButton elementType="9" identifier="_XCUI:MinimizeWindow" label="" title="" enabled="true" selected="false" x="1025" y="-1367" width="16" height="16"/>
+    <XCUIElementTypeStaticText elementType="48" identifier="" value="Liftago" label="" title="" enabled="true" selected="false" x="1076" y="-1367" width="50" height="16"/>
+  </XCUIElementTypeWindow>
+  <XCUIElementTypeMenuBar elementType="55" identifier="" label="" title="" enabled="true" selected="false" x="-1004" y="-1440" width="3440" height="30">
+    <XCUIElementTypeMenuBarItem elementType="56" identifier="" label="" title="Apple" enabled="true" selected="false" x="-994" y="-1440" width="34" height="30">
+      <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+        <XCUIElementTypeMenuItem elementType="54" identifier="_aboutThisMacRequested:" label="" title="O tomto Macu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_systemInformationRequested:" label="" title="Informace o systému" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_systemSettingsRequested:" label="" title="Nastavení systému…, 1 aktualizace" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_appStoreRequested:" label="" title="App Store…, 4 aktualizace" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_recentsRequested:" label="" title="Poslední položky" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Aplikace" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Claude" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Claude“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Cursor" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Cursor“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Google Chrome" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Google Chrome“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Liftago" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Liftago“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Python Launcher" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Python Launcher“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Slack" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Slack“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Telefon" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Telefon“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Terminál" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Terminál“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="TextEdit" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „TextEdit“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zoom" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Zoom“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Dokumenty" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title=".env" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „.env“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="17_1761814932983_uqtu5.png" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „17_1761814932983_uqtu5.png“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="23584_1791273890972_2x43h.png" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „23584_1791273890972_2x43h.png“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="claude_desktop_config.json" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „claude_desktop_config.json“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="cz_speeding_query.sql" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „cz_speeding_query.sql“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="github-recovery-codes.txt" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „github-recovery-codes.txt“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="ChatGPT.dmg" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „ChatGPT.dmg“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="mcp-server-bolt-pint.log" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „mcp-server-bolt-pint.log“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Muž v tmavě modré policejní čepici.png" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „Muž v tmavě modré policejní čepici.png“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="sheet_webhook.gs" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Zobrazit „sheet_webhook.gs“ ve Finderu" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Servery" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_recentItemRequested:" label="" title="Macintosh HD" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_clearRecentItemsRequested:" label="" title="Vyprázdnit nabídku" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_forceQuitPanelRequested:" label="" title="Vynutit ukončení…" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_forceQuitRequested:" label="" title="Vynutit ukončení procesu Liftago" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_sleepRequested:" label="" title="Uspat" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_restartRequested:" label="" title="Restartovat…" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_restartNowRequested:" label="" title="Restartovat" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_shutDownRequested:" label="" title="Vypnout…" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_shutDownNowRequested:" label="" title="Vypnout" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_lockScreenRequested:" label="" title="Zamknout obrazovku" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_logOutRequested:" label="" title="Odhlásit uživatele David Autrata…" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_logOutNowRequested:" label="" title="Odhlásit uživatele David Autrata" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+      </XCUIElementTypeMenu>
+    </XCUIElementTypeMenuBarItem>
+    <XCUIElementTypeMenuBarItem elementType="56" identifier="com.apple.menu.application" label="" title="Liftago" enabled="true" selected="false" x="-960" y="-1440" width="66" height="30">
+      <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+        <XCUIElementTypeMenuItem elementType="54" identifier="orderFrontStandardAboutPanel:" label="" title="O aplikaci Liftago" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="orderFrontPreferencesPanel:" label="" title="Nastavení…" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="com.apple.menu.services" label="" title="Služby" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Activity Monitor" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Allocations &amp; Leaks" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="File Activity" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="System Trace" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Time Profile Active Application" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Time Profile App Under Mouse" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Time Profile Entire System" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Toggle Instruments Recording" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Ask Claude" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="New Claude Code Session Here" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_processRequest:" label="" title="Send to Claude" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_configureServicesMenu:" label="" title="Nastavení služeb…" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="hide:" label="" title="Skrýt Liftago" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="hideOtherApplications:" label="" title="Skrýt ostatní" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="unhideAllApplications:" label="" title="Zobrazit vše" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="terminate:" label="" title="Ukončit Liftago" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="NSAlternateQuitMenuItem" label="" title="Ukončit a zachovat okna" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+      </XCUIElementTypeMenu>
+    </XCUIElementTypeMenuBarItem>
+    <XCUIElementTypeMenuBarItem elementType="56" identifier="com.apple.menu.edit" label="" title="Úpravy" enabled="true" selected="false" x="-894" y="-1440" width="64" height="30">
+      <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+        <XCUIElementTypeMenuItem elementType="54" identifier="odvolat_akci" label="" title="Odvolat akci" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="redo:" label="" title="Opakovat akci" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="vyjmout" label="" title="Vyjmout" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="kopírovat" label="" title="Kopírovat" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="vložit" label="" title="Vložit" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="vložit_a_použít_styl" label="" title="Vložit a použít styl" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="delete:" label="" title="Smazat" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="vybrat_vše" label="" title="Vybrat vše" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="com.apple.menu.find" label="" title="Hledat" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="find:" label="" title="Hledat…" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="findAndReplace:" label="" title="Hledat a nahradit" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="findNext:" label="" title="Hledat další" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="findPrevious:" label="" title="Hledat předchozí" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="useSelectionForFind:" label="" title="Hledat výběr" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="com.apple.menu.spelling" label="" title="Pravopis a gramatika" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="showGuessPanel:" label="" title="Zobrazit pravopis a gramatiku" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="checkSpelling:" label="" title="Zkontrolovat dokument" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="toggleContinuousSpellChecking:" label="" title="Kontrolovat pravopis při psaní" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="toggleGrammarChecking:" label="" title="Kontrolovat gramatiku a pravopis" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="toggleAutomaticSpellingCorrection:" label="" title="Automaticky opravit pravopis" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="com.apple.menu.substitutions" label="" title="Záměny" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="orderFrontSubstitutionsPanel:" label="" title="Zobrazit záměny" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="inteligentní_kopírování/vkládání" label="" title="Inteligentní kopírování/vkládání" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="toggleAutomaticQuoteSubstitution:" label="" title="Inteligentní uvozovky" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="toggleAutomaticDashSubstitution:" label="" title="Inteligentní pomlčky" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="toggleAutomaticLinkDetection:" label="" title="Inteligentní odkazy" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="toggleAutomaticTextReplacement:" label="" title="Nahrazovat text" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="com.apple.menu.transformations" label="" title="Transformace" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="uppercaseWord:" label="" title="Převést na velká písmena" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="lowercaseWord:" label="" title="Převést na malá písmena" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="capitalizeWord:" label="" title="Velká počáteční písmena" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="com.apple.command.speech" label="" title="Řeč" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="startSpeaking:" label="" title="Spustit předčítání" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="stopSpeaking:" label="" title="Zastavit předčítání" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_NSMenuItemAutoFillIdentifier" label="" title="Vyplnit" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="_handleInsertFromContactsCommand:" label="" title="Kontakt…" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_handleInsertFromPasswordsCommand:" label="" title="Hesla…" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_handleInsertFromCreditCardsCommand:" label="" title="Platební karta…" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="startDictation:" label="" title="Zahájit diktování…" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="orderFrontCharacterPalette:" label="" title="Emotikony a symboly" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+      </XCUIElementTypeMenu>
+    </XCUIElementTypeMenuBarItem>
+    <XCUIElementTypeMenuBarItem elementType="56" identifier="com.apple.menu.view" label="" title="Zobrazení" enabled="true" selected="false" x="-830" y="-1440" width="81" height="30">
+      <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+        <XCUIElementTypeMenuItem elementType="54" identifier="toggleToolbarShown:" label="" title="Zobrazit panel nástrojů" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="runToolbarCustomizationPalette:" label="" title="Upravit panel nástrojů…" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="toggleFullScreen:" label="" title="Spustit režim celé obrazovky" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+      </XCUIElementTypeMenu>
+    </XCUIElementTypeMenuBarItem>
+    <XCUIElementTypeMenuBarItem elementType="56" identifier="com.apple.menu.window" label="" title="Okno" enabled="true" selected="false" x="-749" y="-1440" width="53" height="30">
+      <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+        <XCUIElementTypeMenuItem elementType="54" identifier="performClose:" label="" title="Zavřít" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="closeAll:" label="" title="Zavřít vše" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="performMiniaturize:" label="" title="Minimalizovat" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="miniaturizeAll:" label="" title="Minimalizovat vše" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="performZoom:" label="" title="Přepnout velikost" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="zoomAll:" label="" title="Přepnout velikost všech" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_zoomFill:" label="" title="Roztáhnout" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_zoomCenter:" label="" title="Na střed" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Přesunout a změnit velikost" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Poloviny" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomLeft:" label="" title="Vlevo" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomRight:" label="" title="Vpravo" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomTop:" label="" title="Nahoře" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomBottom:" label="" title="Dole" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Kvadranty" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomTopLeft:" label="" title="Vlevo nahoře" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomTopRight:" label="" title="Vpravo nahoře" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomBottomLeft:" label="" title="Vlevo dole" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomBottomRight:" label="" title="Vpravo dole" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Uspořádat" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomLeftAndRight:" label="" title="Vlevo i vpravo" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomLeftThreeUp:" label="" title="Levá strana a kvadranty" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomRightAndLeft:" label="" title="Pravá a levá strana" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomRightThreeUp:" label="" title="Pravá strana a kvadranty" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomTopAndBottom:" label="" title="Horní a dolní polovina" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomTopThreeUp:" label="" title="Horní polovina a kvadranty" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomBottomAndTop:" label="" title="Nahoře i dole" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomBottomThreeUp:" label="" title="Dolní polovina a kvadranty" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomQuarters:" label="" title="Kvadranty" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_zoomUntile:" label="" title="Obnovit předchozí velikost" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="Dlaždice přes celou obrazovku" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+          <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+            <XCUIElementTypeMenuItem elementType="54" identifier="_tileLeft:" label="" title="Levá strana obrazovky" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+            <XCUIElementTypeMenuItem elementType="54" identifier="_tileRight:" label="" title="Pravá strana obrazovky" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+          </XCUIElementTypeMenu>
+        </XCUIElementTypeMenuItem>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_removeWindowFromStageManagerSet:" label="" title="Odstranit okno ze sady" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="_moveToDisplay:" label="" title="Přesunout do Vestavěný Retina displej" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="arrangeInFront:" label="" title="Převést vše do popředí" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="alternateArrangeInFront:" label="" title="Uspořádat v popředí" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="" label="" title="" enabled="false" selected="false" x="0" y="900" width="0" height="0"/>
+        <XCUIElementTypeMenuItem elementType="54" identifier="makeKeyAndOrderFront:" label="" title="Liftago" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+      </XCUIElementTypeMenu>
+    </XCUIElementTypeMenuBarItem>
+    <XCUIElementTypeMenuBarItem elementType="56" identifier="com.apple.menu.help" label="" title="Nápověda" enabled="true" selected="false" x="-696" y="-1440" width="81" height="30">
+      <XCUIElementTypeMenu elementType="53" identifier="" label="" title="" enabled="true" selected="false" x="0" y="900" width="0" height="0">
+        <XCUIElementTypeMenuItem elementType="54" identifier="showHelp:" label="" title="Nápověda pro macOS" enabled="true" selected="false" x="0" y="900" width="0" height="0"/>
+      </XCUIElementTypeMenu>
+    </XCUIElementTypeMenuBarItem>
+  </XCUIElementTypeMenuBar>
+  <XCUIElementTypeTouchBar elementType="81" identifier="" label="" title="" enabled="false" selected="false" x="80" y="30" width="685" height="30"/>
+</XCUIElementTypeApplication>

@@ -1,0 +1,4 @@
+Appium-Python-Client>=3.0
+gspread>=6.0
+requests
+python-dotenv

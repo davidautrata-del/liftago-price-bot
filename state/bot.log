@@ -1,0 +1,24 @@
+2026-10-21 17:11:32,244 scheduler Slot 2026-10-21T07:32+02:00 zmeškán, přeskakuji
+2026-10-21 17:11:32,245 scheduler Slot 2026-10-21T08:20+02:00 zmeškán, přeskakuji
+2026-10-21 17:11:32,245 scheduler Slot 2026-10-21T09:52+02:00 zmeškán, přeskakuji
+2026-10-21 17:11:32,246 scheduler Slot 2026-10-21T12:53+02:00 zmeškán, přeskakuji
+2026-10-21 17:11:32,246 scheduler Slot 2026-10-21T14:11+02:00 zmeškán, přeskakuji
+2026-10-21 17:11:32,247 scheduler Slot 2026-10-21T15:22+02:00 zmeškán, přeskakuji
+2026-10-21 17:11:32,248 scheduler Startuji Appium server
+2026-10-21 17:11:40,651 run_once Trasa: Výstaviště Praha, Za Elektrárnou 419, Praha 7 -> Jiřího z Poděbrad 1, Praha 3 (4.8 km)
+2026-10-21 17:14:41,404 scheduler Slot 2026-10-21T09:57+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,406 scheduler Slot 2026-10-21T10:26+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,407 scheduler Slot 2026-10-21T11:22+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,407 scheduler Slot 2026-10-21T12:01+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,408 scheduler Slot 2026-10-21T12:58+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,408 scheduler Slot 2026-10-21T13:46+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,409 scheduler Slot 2026-10-21T14:25+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,410 scheduler Slot 2026-10-21T15:07+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,411 scheduler Slot 2026-10-21T15:51+02:00 zmeškán, přeskakuji
+2026-10-21 17:14:41,411 scheduler Slot 2026-10-21T16:47+02:00 zmeškán, přeskakuji
+2026-10-22 09:49:12,577 scheduler Startuji Appium server
+2026-10-22 09:49:21,052 run_once Trasa: náměstí Míru 1, Praha 2 -> Mahlerovy sady 1, Praha 3 (1.7 km)
+2026-10-22 09:51:13,195 run_once Zapsáno: ['2026-10-22 09:49', 'náměstí Míru 1, Praha 2', 'Mahlerovy sady 1, Praha 3', 1.7, 15, 550.0, 'žádný výsledek', "tlačítko 'Přejít k výběru řidiče · Odvoz vozu' nenalezeno"]
+2026-10-22 10:38:11,169 scheduler Startuji Appium server
+2026-10-22 10:38:19,741 run_once Trasa: Letenské náměstí 1, Praha 7 -> Anděl, Nádražní 1, Praha 5 (5.4 km)
+2026-10-22 10:40:10,932 run_once Zapsáno: ['2026-10-22 10:38', 'Letenské náměstí 1, Praha 7', 'Anděl, Nádražní 1, Praha 5', 5.4, 14, 754.0, 'žádný výsledek', "tlačítko 'Přejít k výběru řidiče · Odvoz vozu' nenalezeno"]

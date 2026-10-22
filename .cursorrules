@@ -1,0 +1,4 @@
+Přečti nejdřív CURSOR_CONTEXT.md, je tam cíl, architektura, ověřený průběh v appce a seznam úkolů.
+Pravidla: bot nikdy neklikne na "Objednat". Žádná tajemství (zejména SHEET_WEBHOOK_URL a obsah .env) nikdy nevypisuj, nevkládej do kódu, příkazů ani commitů.
+Lokátory měň v selectors.mac.json. V NSPredicate nelze použít atribut `type`.
+Po každé změně kódu spusť `python -m py_compile` na změněné soubory a otestuj `MOCK=1 .venv/bin/python run_once.py`.
