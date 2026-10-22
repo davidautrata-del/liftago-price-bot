@@ -704,10 +704,60 @@ def title_click_point(left, top, width, height, on_title):
     return x, y
 
 
+def category_click_target(elements):
+    """Bod, kterým se vybere Odvoz vozu z prvků, které na obrazovce jsou.
+
+    Přesný úzký prvek „Odvoz vozu“ má přednost. Když ve stromu není, bere se
+    název vlevo na řádku, který už WebDriverAgent přečetl. Střed řádku s cenou
+    ne. Tlačítko na řidiče a Objednat se nepoužijí.
+    """
+    exact = None
+    row = None
+    for el in elements or ():
+        label = (el.get("label") or "").replace("\u00a0", " ").strip()
+        if not label or label == "Objednat" or label.startswith("Objednat "):
+            continue
+        if label.startswith("Přejít k výběru řidiče"):
+            continue
+        try:
+            left = float(el["x"])
+            top = float(el["y"])
+            width = float(el["width"])
+            height = float(el["height"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if width < 2 or height < 2:
+            continue
+        box = (left, top, width, height)
+        if label == "Odvoz vozu" and width < 320:
+            exact = box
+        elif (
+            row is None
+            and "Odvoz vozu" in label
+            and "Řidič vás odveze" in label
+            and not label.lower().startswith("vybráno")
+        ):
+            row = box
+    if exact is not None:
+        return title_click_point(*exact, True)
+    if row is not None:
+        return title_click_point(*row, False)
+    raise AxError("Řádek Odvoz vozu nemá polohu")
+
+
 def press(bundle_id, wanted):
     log.info("AXPress %s", (wanted or "")[:80])
     _refuse_order(wanted)
     _ax_action(bundle_id, wanted, "press")
+
+
+def click_at(bundle_id, x, y, what="Odvoz vozu"):
+    """Jeden klik jen do procesu Liftaga. Kurzor se neposouvá a okno se neaktivuje."""
+    _refuse_order(what)
+    if sys.platform != "darwin":
+        raise AxError("Zpřístupnění funguje jen na macOS")
+    log.info("AXClick %s", (what or "")[:80])
+    _click_pid(process_pid(bundle_id), x, y)
 
 
 def activate_in_row(bundle_id, title, context):

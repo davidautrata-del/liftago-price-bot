@@ -495,29 +495,79 @@ class LiftagoDriver:
         self._park()
         raise last
 
-    def _activate_odvoz_row(self, row):
-        """Vybere Odvoz vozu jedním zásahem na název, ne na sloučený popisek řádku.
+    def _element_box(self, el):
+        """Popisek a plocha prvku, který WebDriverAgent už vidí."""
+        try:
+            label = el.get_attribute("label") or ""
+        except Exception:  # noqa: BLE001
+            label = ""
+        left = top = width = height = None
+        rect = None
+        try:
+            rect = el.rect
+        except Exception:  # noqa: BLE001
+            rect = None
+        if isinstance(rect, dict):
+            left, top = rect.get("x"), rect.get("y")
+            width, height = rect.get("width"), rect.get("height")
+        elif rect is not None:
+            left, top = getattr(rect, "x", None), getattr(rect, "y", None)
+            width, height = getattr(rect, "width", None), getattr(rect, "height", None)
+        if width is None or height is None:
+            try:
+                loc, size = el.location, el.size
+                left, top = loc["x"], loc["y"]
+                width, height = size["width"], size["height"]
+            except Exception:  # noqa: BLE001
+                return None
+        try:
+            return {
+                "label": label,
+                "x": float(left),
+                "y": float(top),
+                "width": float(width),
+                "height": float(height),
+            }
+        except (TypeError, ValueError):
+            return None
 
-        Dlouhý popisek AXPress přijme a kategorii nevybere. V popředí se klepne
-        na řádek jako dřív. V pozadí se vezme prvek „Odvoz vozu“ v tom řádku.
+    def _category_boxes(self, row):
+        nodes = [row]
+        try:
+            nodes.extend(row.find_elements("xpath", ".//*"))
+        except Exception:  # noqa: BLE001
+            pass
+        boxes = []
+        for el in nodes:
+            box = self._element_box(el)
+            if box is not None:
+                boxes.append(box)
+        return boxes
+
+    def _activate_odvoz_row(self, row):
+        """Jednou klepne na název Odvoz vozu v řádku, který už je na obrazovce.
+
+        Samostatný prvek „Odvoz vozu“ ve zpřístupnění není. Dlouhý popisek s cenou
+        se nemačká, protože tím se kategorie nevybere. V pozadí jde jeden
+        klik jen do procesu Liftaga, na úzký název, když ho WebDriverAgent vidí,
+        jinak na místo názvu vlevo na tom řádku. Kurzor se neposouvá.
         """
         if not self._background_mode():
             self._press(row)
             return True
         import mac_background
 
-        sel = SELECTORS.get("category_row") or {}
-        title = (sel.get("ax_title") or "Odvoz vozu").strip()
-        context = (sel.get("ax_context") or "Řidič vás odveze").strip()
         try:
             mac_background.show_unfocused(config.LIFTAGO_BUNDLE_ID, self._user_front)
         except Exception:  # noqa: BLE001
             log.warning("Okno Liftaga se před výběrem kategorie nepodařilo ukázat", exc_info=True)
         time.sleep(0.4)
+        fresh = self._find_category_row() or row
         try:
-            mac_background.activate_in_row(config.LIFTAGO_BUNDLE_ID, title, context)
+            click_x, click_y = mac_background.category_click_target(self._category_boxes(fresh))
+            mac_background.click_at(config.LIFTAGO_BUNDLE_ID, click_x, click_y, "Odvoz vozu")
         except Exception as exc:  # noqa: BLE001
-            log.info("Název Odvoz vozu zatím nejde vybrat: %s", exc)
+            log.info("Odvoz vozu se jedním klikem nepodařilo vybrat: %s", exc)
             return False
         finally:
             self._park()
@@ -755,8 +805,8 @@ class LiftagoDriver:
                 if "Pouze později" in label and "Odvoz vozu" in label:
                     return False
                 if not label_is_selected_odvoz(label) and not label.lower().startswith("vybráno"):
-                    if self._activate_odvoz_row(row):
-                        presses += 1
+                    self._activate_odvoz_row(row)
+                    presses += 1
             time.sleep(1)
         return (
             selection_step(assess_category_screen(_screen_texts(self.driver)), presses) == "done"

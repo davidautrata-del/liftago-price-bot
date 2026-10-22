@@ -14,6 +14,7 @@ from mac_background import (
     AxError,
     applescript_literal,
     build_script,
+    category_click_target,
     category_hit,
     best_after,
     nth_after,
@@ -214,6 +215,30 @@ class AxQuotingTest(unittest.TestCase):
         self.assertLess(x - 1003, 120)
         self.assertLess(y - (-820), 30)
         self.assertNotAlmostEqual(x, 1003 + 503, delta=50)
+
+    def test_missing_title_uses_the_row_that_was_read(self):
+        row = {
+            "label": "Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 597 Kč za 15 min",
+            "x": 1003, "y": 240, "width": 1006, "height": 63,
+        }
+        title = {"label": "Odvoz vozu", "x": 1067, "y": 256, "width": 68, "height": 16}
+        x, y = category_click_target([
+            row,
+            {"label": "597 Kč", "x": 1600, "y": 250, "width": 70, "height": 18},
+            {"label": "Přejít k výběru řidiče", "x": 1100, "y": 900, "width": 400, "height": 48},
+            {"label": "Objednat", "x": 1100, "y": 960, "width": 200, "height": 48},
+            title,
+        ])
+        self.assertAlmostEqual(x, 1067 + 34)
+        self.assertAlmostEqual(y, 256 + 8)
+        x, y = category_click_target([row])
+        self.assertLess(x - 1003, 120)
+        self.assertLess(y - 240, 30)
+        self.assertNotAlmostEqual(x, 1003 + 503, delta=50)
+        with self.assertRaises(AxError):
+            category_click_target([
+                {"label": "Přejít k výběru řidiče", "x": 1, "y": 1, "width": 10, "height": 10},
+            ])
 
     def test_category_click_does_not_move_the_pointer(self):
         src = Path(mac_background.__file__).read_text(encoding="utf-8")
