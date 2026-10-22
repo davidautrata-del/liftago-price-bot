@@ -503,7 +503,7 @@ class LiftagoDriver:
         """
         if not self._background_mode():
             self._press(row)
-            return
+            return True
         import mac_background
 
         sel = SELECTORS.get("category_row") or {}
@@ -516,8 +516,12 @@ class LiftagoDriver:
         time.sleep(0.4)
         try:
             mac_background.activate_in_row(config.LIFTAGO_BUNDLE_ID, title, context)
+        except Exception as exc:  # noqa: BLE001
+            log.info("Název Odvoz vozu zatím nejde vybrat: %s", exc)
+            return False
         finally:
             self._park()
+        return True
 
     def _press_suggestion(self, el):
         """První návrh adresy. Nemusí mít popisek: je to tlačítko za „Vybrat na mapě“."""
@@ -751,8 +755,8 @@ class LiftagoDriver:
                 if "Pouze později" in label and "Odvoz vozu" in label:
                     return False
                 if not label_is_selected_odvoz(label) and not label.lower().startswith("vybráno"):
-                    self._activate_odvoz_row(row)
-                    presses += 1
+                    if self._activate_odvoz_row(row):
+                        presses += 1
             time.sleep(1)
         return (
             selection_step(assess_category_screen(_screen_texts(self.driver)), presses) == "done"
@@ -824,8 +828,15 @@ class LiftagoDriver:
             texts = self._category_texts()
             bez, _, note = parse_prices(texts)
             km, eta = parse_km(texts) or planned_km, parse_eta(texts)
-            # Nejdřív klik na Odvoz vozu. Tlačítko řidičů až po potvrzení výběru.
-            if not self._select_odvoz():
+            # Nejdřív klik na Odvoz vozu. Chybějící prvek po Potvrdit běh neshodí.
+            try:
+                selected = self._select_odvoz()
+            except Exception as exc:  # noqa: BLE001
+                if type(exc).__name__ != "AxError":
+                    raise
+                log.info("Výběr Odvoz vozu po potvrzení adresy nedošel: %s", exc)
+                selected = False
+            if not selected:
                 self._dump_debug("go_button_missing")
                 step = assess_category_screen(_screen_texts(d))
                 if step == "wrong_category":

@@ -314,11 +314,40 @@ def suggestion_tokens(text):
     ]
 
 
+def place_head(query):
+    """Název místa před první čárkou, bez čísla popisného na konci."""
+    head = (query or "").split(",")[0].strip()
+    return re.sub(r"\s+\d+[a-zA-Z]?$", "", head).strip()
+
+
+def _starts_with_place(query, candidate):
+    head = _fold_text(place_head(query))
+    folded = _fold_text(candidate).lstrip(" -–—,")
+    return bool(head) and (folded == head or folded.startswith(head + " ") or folded.startswith(head + ","))
+
+
+def _foreign_prefix(query, candidate):
+    """Název provozovny před místem, které uživatel zadal. Třeba Bistro DELMART."""
+    if _starts_with_place(query, candidate):
+        return False
+    known = set(suggestion_tokens(query))
+    known.update(re.findall(r"[a-z0-9]+", _fold_text(place_head(query))))
+    for word in re.findall(r"[a-z0-9]+", _fold_text(candidate)):
+        if word in _SUGGESTION_GENERIC or word.isdigit():
+            continue
+        return word not in known
+    return False
+
+
 def suggestion_score(query, candidate):
-    """Jak moc návrh odpovídá zadané adrese. 0 znamená, že to není ten návrh."""
+    """Jak moc návrh odpovídá zadané adrese. 0 znamená, že to není ten návrh.
+
+    Místo, jehož vlastní název je zadané místo, má přednost před provozovnou,
+    která tu ulici jen obsahuje.
+    """
     wanted = suggestion_tokens(query)
     folded = _fold_text(candidate)
-    if not wanted or not folded.strip():
+    if not wanted or not folded.strip() or _foreign_prefix(query, candidate):
         return 0
     if not re.search(rf"(?<![a-z0-9]){re.escape(wanted[0])}(?![a-z0-9])", folded):
         return 0
@@ -330,6 +359,8 @@ def suggestion_score(query, candidate):
         if re.search(rf"(?<!\d){number}(?!\d)", folded):
             hits += 1
             break
+    if _starts_with_place(query, candidate):
+        hits += 1000
     return hits
 
 
@@ -999,14 +1030,18 @@ class _Ax:
         desc = self._string(el, self.k_desc)
         title = self._string(el, self.k_title)
         placeholder = self._string(el, self.k_placeholder)
+        value = ""
+        if not desc and not title:
+            value = self._string(el, self.k_value)
         axid = ""
-        if wanted and wanted not in (desc, title, placeholder):
+        if wanted and wanted not in (desc, title, placeholder, value):
             axid = self._string(el, self.k_ident)
         return {
             "role": role,
             "desc": desc,
             "name": title,
             "title": title,
+            "value": value,
             "axid": axid,
             "placeholder": placeholder,
         }

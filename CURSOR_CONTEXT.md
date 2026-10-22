@@ -29,7 +29,7 @@ Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone a
 
 ## Průběh v appce (ověřeno ručně přes inspect_ui.py)
 1. Úvodní obrazovka: tlačítko `Kam pojedeme?`.
-2. Obrazovka "Zadejte trasu": dvě `XCUIElementTypeTextField` (`Nástupní adresa`, `Cílová adresa`). Pickup se musí změnit, výchozí je aktuální poloha. Po napsání adresy jsou návrhy tlačítka za `Vybrat na mapě`. Bere se ten, jehož popisek odpovídá zadané adrese. První prázdné tlačítko za značkou se nepoužije, když existuje pojmenovaný návrh.
+2. Obrazovka "Zadejte trasu": dvě `XCUIElementTypeTextField` (`Nástupní adresa`, `Cílová adresa`). Pickup se musí změnit, výchozí je aktuální poloha. Po napsání adresy jsou návrhy tlačítka za `Vybrat na mapě`. Bere se návrh, jehož vlastní název je zadané místo (`OC Letňany`), ne provozovna, která tu adresu jen obsahuje (`Bistro DELMART …`). První prázdné tlačítko za značkou se nepoužije.
 3. **Mezikroky, které se objeví jen u některých adres (oblasti s pevnými body):** tlačítko `Potvrdit adresu vyzvednutí` po výběru pickupu a `Potvrdit cíl jízdy` po výběru cíle (selektor `confirm_dropoff` je zatím odhad, neověřený).
 4. Popup `Pro koho je tato jízda?` → tlačítko `Potvrdit` (volitelný).
 5. Seznam kategorií. Řádek "Odvoz vozu" je tlačítko s popiskem `Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 550 Kč za 6 min`. Uvnitř je text jen `Odvoz vozu`. Pokud už je vybraný, je to `Other` s popiskem začínajícím `vybráno`. Klepnutí na vybranou kategorii otevře info o službě, proto se neklikne. Kategorie může být schovaná pod tlačítkem `X další`. Může mít `Pouze později` (nedostupná) nebo v seznamu chybět → do sloupců se zapíše `žádný výsledek`. Cena v seznamu = **"Cena bez slevy"**.

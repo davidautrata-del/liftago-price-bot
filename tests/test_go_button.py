@@ -208,6 +208,18 @@ class GoButtonTest(unittest.TestCase):
         ]
         self.assertEqual(pick_suggestion(typed, labels), "Vítězné náměstí, Praha 6, Česko")
         self.assertIsNone(pick_suggestion(typed, ["", "Vybrat na mapě"]))
+        letnany = "OC Letňany, Veselská 663, Praha 9"
+        tenant = "Bistro DELMART OC Letňany, Veselská 663, Praha 18, Česko"
+        mall = "OC Letňany, Veselská 663, Praha 9, Česko"
+        self.assertEqual(pick_suggestion(letnany, [tenant, mall]), mall)
+        self.assertIsNone(pick_suggestion(letnany, ["", tenant]))
+        self.assertEqual(
+            pick_suggestion(
+                "Letiště Václava Havla, Aviatická 1, Praha 6",
+                ["Aviatická 1, Letiště Václava Havla (PRG), Praha 6, Česko"],
+            ),
+            "Aviatická 1, Letiště Václava Havla (PRG), Praha 6, Česko",
+        )
         page = """
         <XCUIElementTypeWindow>
           <XCUIElementTypeButton label="Vybrat na mapě"/>
