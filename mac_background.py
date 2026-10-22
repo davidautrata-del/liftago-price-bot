@@ -35,13 +35,15 @@ on run
       set frontmost of proc to false
       my giveBack(item 6 of axArgs)
     else if mode is "place" then
-      set x to (item 4 of axArgs) as integer
-      set y to (item 5 of axArgs) as integer
-      set visible of proc to true
       try
+        set x to (item 4 of axArgs) as integer
+        set y to (item 5 of axArgs) as integer
+        set visible of proc to true
         set position of window 1 of proc to {x, y}
       end try
-      set frontmost of proc to false
+      try
+        set frontmost of proc to false
+      end try
       my giveBack(item 6 of axArgs)
     end if
   end tell
@@ -68,6 +70,19 @@ PREFIX_ROLES = frozenset({
     "AXButton", "AXTextField", "AXTextArea", "AXSearchField", "AXGroup",
 })
 _EXACT_KEYS = ("desc", "name", "title", "axid", "placeholder")
+# Názvy atributů. Odpovídající symboly z hlavičky tenhle Mac neexportuje.
+AX_ATTRIBUTE_NAMES = {
+    "windows": "AXWindows",
+    "children": "AXChildren",
+    "role": "AXRole",
+    "description": "AXDescription",
+    "title": "AXTitle",
+    "value": "AXValue",
+    "identifier": "AXIdentifier",
+    "placeholder": "AXPlaceholderValue",
+    "focused": "AXFocused",
+    "press": "AXPress",
+}
 _SEARCH_LIMIT = 8
 _NODE_LIMIT = 8000
 _UTF8 = 0x08000100
@@ -320,8 +335,9 @@ def _ax_action(bundle_id, wanted, mode, value=""):
         raise AxError("AX element not found")
     pid = process_pid(bundle_id)
     ax = _Ax()
-    app = ax.application(pid)
+    app = None
     try:
+        app = ax.application(pid)
         accept = None
         if mode == "press":
             accept = lambda info: (info.get("role") or "") in PRESS_ROLES
@@ -350,6 +366,7 @@ def _ax_action(bundle_id, wanted, mode, value=""):
             ax.release(node)
     finally:
         ax.release(app)
+        ax.close()
 
 
 class _Ax:
@@ -361,20 +378,25 @@ class _Ax:
         self.ax = ctypes.cdll.LoadLibrary(
             "/System/Library/Frameworks/ApplicationServices.framework/Frameworks/"
             "HIServices.framework/HIServices")
+        self._owned = []
         self._bind()
-        self.k_windows = self._sym("kAXWindowsAttribute")
-        self.k_children = self._sym("kAXChildrenAttribute")
-        self.k_role = self._sym("kAXRoleAttribute")
-        self.k_desc = self._sym("kAXDescriptionAttribute")
-        self.k_title = self._sym("kAXTitleAttribute")
-        self.k_value = self._sym("kAXValueAttribute")
-        self.k_ident = self._sym("kAXIdentifierAttribute")
-        self.k_placeholder = self._sym("kAXPlaceholderValueAttribute")
-        self.k_focused = self._sym("kAXFocusedAttribute")
-        self.k_press = self._sym("kAXPressAction")
-        self.k_true = ctypes.c_void_p.in_dll(self.cf, "kCFBooleanTrue")
-        self._string_tid = self.cf.CFStringGetTypeID()
-        self._array_tid = self.cf.CFArrayGetTypeID()
+        try:
+            self.k_windows = self._name("windows")
+            self.k_children = self._name("children")
+            self.k_role = self._name("role")
+            self.k_desc = self._name("description")
+            self.k_title = self._name("title")
+            self.k_value = self._name("value")
+            self.k_ident = self._name("identifier")
+            self.k_placeholder = self._name("placeholder")
+            self.k_focused = self._name("focused")
+            self.k_press = self._name("press")
+            self.k_true = ctypes.c_void_p.in_dll(self.cf, "kCFBooleanTrue")
+            self._string_tid = self.cf.CFStringGetTypeID()
+            self._array_tid = self.cf.CFArrayGetTypeID()
+        except Exception:
+            self.close()
+            raise
 
     def _bind(self):
         ax, cf = self.ax, self.cf
@@ -411,8 +433,18 @@ class _Ax:
         cf.CFStringGetCString.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_long, ctypes.c_uint32]
         cf.CFStringGetCString.restype = ctypes.c_bool
 
-    def _sym(self, name):
-        return ctypes.c_void_p.in_dll(self.ax, name)
+    def _name(self, key):
+        text = AX_ATTRIBUTE_NAMES[key]
+        ref = self.cf.CFStringCreateWithCString(None, text.encode("utf-8"), _UTF8)
+        if not ref:
+            raise AxError(f"Nelze vytvořit atribut {text}")
+        self._owned.append(ref)
+        return ref
+
+    def close(self):
+        for ref in self._owned:
+            self.cf.CFRelease(ref)
+        self._owned.clear()
 
     def release(self, ref):
         if ref:

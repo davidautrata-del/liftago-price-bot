@@ -5,9 +5,12 @@ prochází jen do první shody a menu bar se neotevírá.
 """
 import time
 import unittest
+from pathlib import Path
 
+import mac_background
 from mac_background import (
     ACTION_SCRIPT,
+    AX_ATTRIBUTE_NAMES,
     AxError,
     applescript_literal,
     build_script,
@@ -61,6 +64,15 @@ def _search(roots, wanted, deadline=None, accept_exact=None):
 
 
 class AxQuotingTest(unittest.TestCase):
+    def test_attribute_names_are_strings_not_dll_symbols(self):
+        self.assertEqual(AX_ATTRIBUTE_NAMES["windows"], "AXWindows")
+        self.assertEqual(AX_ATTRIBUTE_NAMES["press"], "AXPress")
+        self.assertEqual(AX_ATTRIBUTE_NAMES["children"], "AXChildren")
+        self.assertEqual(AX_ATTRIBUTE_NAMES["placeholder"], "AXPlaceholderValue")
+        file_src = Path(mac_background.__file__).read_text(encoding="utf-8")
+        self.assertNotIn("kAX", file_src)
+        self.assertNotIn("in_dll(self.ax", file_src)
+
     def test_shell_script_does_not_walk_the_app(self):
         self.assertNotIn("entire contents", ACTION_SCRIPT)
         self.assertNotIn("AXIdentifier", ACTION_SCRIPT)

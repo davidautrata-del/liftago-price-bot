@@ -200,6 +200,9 @@ class LiftagoDriver:
             opts.set_capability("appium:automationName", "mac2")
             opts.set_capability("appium:bundleId", config.LIFTAGO_BUNDLE_ID)
             opts.set_capability("appium:newCommandTimeout", 300)
+            if config.BACKGROUND:
+                # Konec relace by Liftago jinak ukončil a okno by nešlo vrátit.
+                opts.set_capability("appium:skipAppKill", True)
         else:
             from appium.options.android import UiAutomator2Options
 
@@ -279,8 +282,8 @@ class LiftagoDriver:
             mac_background.place(
                 config.LIFTAGO_BUNDLE_ID, pos[0], pos[1], self._user_front,
             )
-        except Exception:  # noqa: BLE001
-            log.warning("Okno Liftaga se nepodařilo vrátit")
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Okno Liftaga se nepodařilo vrátit: %s", exc)
 
     def _restart_app(self):
         d = self.driver

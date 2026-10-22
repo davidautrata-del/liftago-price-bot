@@ -165,6 +165,8 @@ class GoButtonTest(unittest.TestCase):
         self.assertNotIn("terminateApp", background)
         self.assertNotIn("launchApp", background)
         self.assertIn("show_unfocused", background)
+        session = Path(ROOT / "liftago_driver.py").read_text()
+        self.assertIn("skipAppKill", session)
 
     def test_hidden_intro_label_comes_from_the_selector(self):
         self.assertEqual(_exact_label(self.mac["open_search"]), "Kam pojedeme?")
