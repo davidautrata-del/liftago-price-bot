@@ -1,7 +1,19 @@
-"""Adresy a popisky nesmí rozbít AppleScript (chyba -2741 z 12:49)."""
+"""Adresy a popisky nesmí rozbít AppleScript (chyba -2741 z 12:49).
+
+Hledání prvku už nejde přes osascript (timeout 45 s z 13:13). Strom oken se
+prochází jen do první shody a menu bar se neotevírá.
+"""
+import time
 import unittest
 
-from mac_background import ACTION_SCRIPT, applescript_literal, build_script
+from mac_background import (
+    ACTION_SCRIPT,
+    AxError,
+    applescript_literal,
+    build_script,
+    press,
+    search_tree,
+)
 
 ADDRESS = "Letecké muzeum Kbely, Mladoboleslavská, Praha 9"
 
@@ -30,10 +42,29 @@ def _quotes_balanced(line):
     return not in_str
 
 
+def _search(roots, wanted, deadline=None, accept_exact=None):
+    described = []
+
+    def describe(node):
+        described.append(node.get("desc") or node.get("role"))
+        return node
+
+    def children_of(node):
+        return node.get("children") or ()
+
+    found = search_tree(
+        roots, wanted, children_of, describe,
+        deadline if deadline is not None else time.monotonic() + 2,
+        accept_exact=accept_exact,
+    )
+    return found, described
+
+
 class AxQuotingTest(unittest.TestCase):
-    def test_identifier_quote_is_inside_system_events(self):
-        handler = ACTION_SCRIPT.split("on attrText", 1)[1].split("end attrText", 1)[0]
-        self.assertLess(handler.index('tell application "System Events"'), handler.index("AXIdentifier"))
+    def test_shell_script_does_not_walk_the_app(self):
+        self.assertNotIn("entire contents", ACTION_SCRIPT)
+        self.assertNotIn("AXIdentifier", ACTION_SCRIPT)
+        self.assertNotIn("AXPress", ACTION_SCRIPT)
 
     def test_kbely_address_stays_inside_one_string(self):
         src = build_script(["com.example.app", "set", "Cílová adresa", ADDRESS])
@@ -52,6 +83,59 @@ class AxQuotingTest(unittest.TestCase):
         line = _ax_args_line(build_script(["bid", "press", nasty]))
         self.assertTrue(_quotes_balanced(line))
         self.assertNotIn('Řekni "ahoj"', line)
+
+    def test_order_button_is_refused_without_a_script(self):
+        with self.assertRaises(AxError):
+            press("com.example.app", "Objednat")
+
+    def test_menu_bar_is_not_searched(self):
+        window = {
+            "role": "AXWindow",
+            "children": [
+                {
+                    "role": "AXMenuBar",
+                    "desc": "lišta",
+                    "children": [{"role": "AXMenuItem", "desc": "Nástupní adresa"}],
+                },
+                {"role": "AXTextField", "desc": "Nástupní adresa"},
+                {"role": "AXButton", "desc": "až potom"},
+            ],
+        }
+        found, described = _search([window], "Nástupní adresa")
+        self.assertEqual(found["role"], "AXTextField")
+        self.assertEqual(described.count("Nástupní adresa"), 1)
+        self.assertNotIn("až potom", described)
+
+    def test_menu_label_alone_is_not_a_match(self):
+        window = {
+            "role": "AXWindow",
+            "children": [
+                {"role": "AXMenuBar", "children": [{"role": "AXMenuItem", "desc": "Nástupní adresa"}]},
+            ],
+        }
+        with self.assertRaises(AxError):
+            _search([window], "Nástupní adresa")
+
+    def test_deadline_stops_before_a_full_scan(self):
+        window = {"role": "AXWindow", "children": [{"role": "AXButton", "desc": "Nástupní adresa"}]}
+        with self.assertRaises(AxError) as caught:
+            _search([window], "Nástupní adresa", deadline=time.monotonic() - 1)
+        self.assertIn("limit času", str(caught.exception))
+
+    def test_press_prefers_a_button_over_a_static_label(self):
+        window = {
+            "role": "AXWindow",
+            "children": [
+                {"role": "AXStaticText", "desc": "Nástupní adresa"},
+                {"role": "AXTextField", "desc": "Nástupní adresa", "placeholder": "Nástupní adresa"},
+            ],
+        }
+        found, _described = _search(
+            [window],
+            "Nástupní adresa",
+            accept_exact=lambda info: info.get("role") in {"AXTextField", "AXButton"},
+        )
+        self.assertEqual(found["role"], "AXTextField")
 
 
 if __name__ == "__main__":

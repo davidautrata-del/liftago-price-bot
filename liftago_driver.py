@@ -1,7 +1,7 @@
 """Ovládání Liftago appky přes Appium. Jen zjišťuje cenu, nic neobjednává.
 
 Na Macu při BACKGROUND=1 (výchozí) běží měření na pozadí: okno se schová,
-tlačítka jdou přes AXPress a fokus i myš zůstávají uživateli.
+tlačítka jdou přes AXPress. Kurzor se neposouvá a fokus zůstává uživateli.
 
 PLATFORM=mac      iPhone appka z App Store běžící na Macu s Apple Silicon (driver mac2)
 PLATFORM=android  Android telefon / emulátor (driver uiautomator2)
@@ -126,7 +126,6 @@ class LiftagoDriver:
     def __init__(self):
         self.driver = None
         self._user_front = None
-        self._user_mouse = None
         self._saved_window = None
         self._offscreen = False
         if config.MOCK:
@@ -135,7 +134,6 @@ class LiftagoDriver:
             import mac_background
 
             self._user_front = mac_background.frontmost_name()
-            self._user_mouse = mac_background.mouse_position()
             self._saved_window = mac_background.window_position(config.LIFTAGO_BUNDLE_ID)
         from appium import webdriver
 
@@ -207,13 +205,13 @@ class LiftagoDriver:
             pass
 
     def _park(self):
-        """Schová okno a vrátí fokus i myš uživateli."""
+        """Schová okno a vrátí fokus uživateli. Kurzorem nehýbe."""
         if not self._background_mode() or not self._offscreen:
             return
         import mac_background
 
         try:
-            mac_background.hide_app(config.LIFTAGO_BUNDLE_ID, self._user_front, self._user_mouse)
+            mac_background.hide_app(config.LIFTAGO_BUNDLE_ID, self._user_front)
         except Exception:  # noqa: BLE001
             log.warning("Liftago se nepodařilo schovat", exc_info=True)
 
@@ -226,7 +224,7 @@ class LiftagoDriver:
         pos = self._saved_window or (100, 80)
         try:
             mac_background.place(
-                config.LIFTAGO_BUNDLE_ID, pos[0], pos[1], self._user_front, self._user_mouse,
+                config.LIFTAGO_BUNDLE_ID, pos[0], pos[1], self._user_front,
             )
         except Exception:  # noqa: BLE001
             log.warning("Okno Liftaga se nepodařilo vrátit")
@@ -250,14 +248,17 @@ class LiftagoDriver:
                 mac_background.launch_hidden(config.LIFTAGO_BUNDLE_ID)
                 time.sleep(1.5)
                 self._offscreen = True
-                self._park()
                 try:
                     _find(d, SELECTORS["open_search"], timeout=8)
                 except Exception:  # noqa: BLE001
-                    log.warning("Skrytý start nevidí úvod, krátce aktivuji a hned schovám")
-                    d.execute_script("macos: activateApp", bid)
-                    time.sleep(1)
-                    self._park()
+                    # Vytáhnout appku dopředu by sebralo fokus a posunulo kurzor.
+                    log.info("Skrytý start ještě nevidí úvod, okno nechám v pozadí")
+                    try:
+                        mac_background.show_unfocused(config.LIFTAGO_BUNDLE_ID, self._user_front)
+                    except Exception:  # noqa: BLE001
+                        log.warning("Okno Liftaga se nepodařilo nechat v pozadí", exc_info=True)
+                    _find(d, SELECTORS["open_search"], timeout=8)
+                self._park()
                 return
             d.execute_script("macos: activateApp", bid)
         else:

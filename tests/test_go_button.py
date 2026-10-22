@@ -137,12 +137,20 @@ class GoButtonTest(unittest.TestCase):
         self.assertNotIn("key code", src)
         self.assertNotIn("click ", src)
         self.assertNotIn("activate", src.lower())
-        self.assertIn("AXPress", src)
+        self.assertNotIn("entire contents", src)
         self.assertIn("set visible of proc to false", src)
         self.assertIn("set frontmost of proc to false", src)
         typed = Path(mac_background.__file__).read_text()
+        self.assertIn("AXPress", typed)
         self.assertIn("CGEventPostToPid", typed)
+        self.assertNotIn("CGWarpMouseCursorPosition", typed)
+        self.assertNotIn("entire contents", typed)
         self.assertNotIn("keystroke", typed)
+        restart = Path(ROOT / "liftago_driver.py").read_text().split("def _restart_app", 1)[1].split("def _element_names", 1)[0]
+        background = restart.split("if self._background_mode():", 1)[1].split("d.execute_script", 1)[0]
+        self.assertNotIn("activateApp", background)
+        self.assertIn("launch_hidden", background)
+        self.assertIn("show_unfocused", background)
 
 
 if __name__ == "__main__":
