@@ -121,20 +121,23 @@ class GoButtonTest(unittest.TestCase):
         self.assertTrue(any("Odvoz vozu Řidič" in label for label in self.labels))
         self.assertTrue(any(label.startswith("vybráno Liftago") for label in self.labels))
 
-    def test_visible_go_button_is_pressed_without_another_row_tap(self):
+    def test_go_button_waits_until_odvoz_is_selected(self):
         self.assertIn("Přejít k výběru řidiče", self.labels)
-        self.assertEqual(assess_category_screen(self.labels), "press")
-        self.assertEqual(selection_step("press", 0), "done")
-        self.assertEqual(selection_step("press", 3), "done")
-        row_only = ["Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 805 Kč za 6 min"]
-        self.assertEqual(assess_category_screen(row_only), "select")
+        self.assertEqual(assess_category_screen(self.labels), "select")
         self.assertEqual(selection_step("select", 0), "press_row")
         self.assertEqual(selection_step("select", 1), "wait")
+        self.assertEqual(assess_category_screen(["Přejít k výběru řidiče"]), "absent")
+        self.assertEqual(
+            assess_category_screen(["Přejít k výběru řidiče", "vybráno Liftago Všechny dostupné vozy"]),
+            "absent",
+        )
         selected = [
             "vybráno Odvoz vozu Řidič vás odveze ve vašem voze" if label.startswith("vybráno") else label
             for label in self.labels
         ]
         self.assertEqual(assess_category_screen(selected), "press")
+        self.assertEqual(selection_step("press", 0), "done")
+        self.assertEqual(assess_category_screen(["Přejít k výběru řidiče · Odvoz vozu"]), "press")
 
     def test_other_category_suffix_is_refused(self):
         self.assertTrue(go_label_targets_odvoz("Přejít k výběru řidiče"))

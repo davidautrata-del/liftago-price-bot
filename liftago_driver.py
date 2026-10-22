@@ -35,20 +35,37 @@ def is_order_button(label):
     return text == "Objednat" or text.startswith("Objednat ")
 
 
-def go_label_targets_odvoz(label):
-    """Tlačítko pokračuje na řidiče kategorie Odvoz vozu.
-
-    Aktuální appka má popisek jen „Přejít k výběru řidiče“. Starší podoba
-    připojovala kategorii za „·“; jiná kategorie se nepřijme.
-    """
+def go_label_suffix(label):
+    """None, když to není tlačítko na řidiče. Prázdný řetězec, když v popisku kategorie není."""
     text = (label or "").replace("\u00a0", " ").strip()
     if is_order_button(text) or not text.startswith(_GO_PREFIX):
-        return False
+        return None
     rest = text[len(_GO_PREFIX):].strip()
+    return rest.lstrip("·•|–—- ").strip()
+
+
+def go_label_targets_odvoz(label):
+    """Tlačítko vede na řidiče. Holý popisek ještě neříká, která kategorie je vybraná.
+
+    Starší podoba připojovala kategorii za „·“; jiná kategorie se nepřijme.
+    """
+    rest = go_label_suffix(label)
+    if rest is None:
+        return False
     if not rest:
         return True
-    rest = rest.lstrip("·•|–—- ").strip()
     return rest == "Odvoz vozu" or rest.startswith("Odvoz vozu ")
+
+
+def go_label_names_odvoz(label):
+    """Samotný popisek jmenuje Odvoz vozu. Holé „Přejít k výběru řidiče“ ne."""
+    rest = go_label_suffix(label)
+    return bool(rest) and (rest == "Odvoz vozu" or rest.startswith("Odvoz vozu "))
+
+
+def go_label_names_other_category(label):
+    rest = go_label_suffix(label)
+    return bool(rest) and not go_label_names_odvoz(label)
 
 
 def suggestion_target(names, value, sel):
@@ -77,39 +94,53 @@ def suggestion_target(names, value, sel):
 
 
 def label_is_selected_odvoz(label):
-    text = (label or "").strip()
-    return text.startswith("vybráno") and "Odvoz vozu" in text
+    text = (label or "").replace("\u00a0", " ").strip().lower()
+    return text.startswith("vybráno") and "odvoz vozu" in text
+
+
+def _unselected_odvoz_row(labels):
+    return any(
+        "Odvoz vozu" in label and "Řidič" in label and not label_is_selected_odvoz(label)
+        for label in labels
+    )
 
 
 def assess_category_screen(labels):
     """Co udělat na obrazovce kategorií: press, select, wait, later, wrong_category, absent.
 
-    Tlačítko „Přejít k výběru řidiče“ na obrazovce stačí. Řádek už nemusí začínat
-    „vybráno“; bez toho se řádek mačkal pořád dokola a tlačítko zůstalo nepoužité.
+    „Přejít k výběru řidiče“ se smí stisknout až když je vybraná Odvoz vozu.
+    Potvrzení je popisek začínající „vybráno“ a obsahující Odvoz vozu, nebo starý
+    popisek tlačítka s „· Odvoz vozu“. Samotná viditelnost tlačítka nestačí:
+    patří kategorii, která je vybraná teď.
     """
-    has_go = any(go_label_targets_odvoz(label) for label in labels)
-    wrong = any(
-        label.startswith(_GO_PREFIX) and not go_label_targets_odvoz(label) for label in labels
-    )
-    if wrong and not has_go:
-        return "wrong_category"
-    if has_go:
+    confirmed = any(label_is_selected_odvoz(label) for label in labels)
+    explicit = any(go_label_names_odvoz(label) for label in labels)
+    bare = any(go_label_suffix(label) == "" for label in labels)
+    other = any(go_label_names_other_category(label) for label in labels)
+    row = _unselected_odvoz_row(labels)
+    later = any("Odvoz vozu" in label and "Pouze později" in label for label in labels)
+    if explicit or (confirmed and bare):
         return "press"
-    for label in labels:
-        if "Odvoz vozu" in label and "Pouze později" in label:
-            return "later"
-    if any(label_is_selected_odvoz(label) for label in labels):
-        return "wait"
-    if any("Odvoz vozu" in label and "Řidič" in label for label in labels):
+    if other and not row:
+        return "wrong_category"
+    if later and not row:
+        return "later"
+    if row and not confirmed:
         return "select"
+    if confirmed:
+        return "wait"
+    if other:
+        return "wrong_category"
+    if later:
+        return "later"
     return "absent"
 
 
 def selection_step(action, presses):
-    """Další krok výběru. Řádek se smí stisknout jen jednou, a jen když tlačítko ještě není vidět."""
+    """Nejdřív jeden klik na řádek. Tlačítko řidičů až po potvrzeném výběru."""
     if action == "press":
         return "done"
-    if action in ("wrong_category", "later"):
+    if action in ("wrong_category", "later", "absent"):
         return "stop"
     if action == "select" and presses < 1:
         return "press_row"
@@ -580,16 +611,17 @@ class LiftagoDriver:
         return label_is_selected_odvoz(" ".join(parts))
 
     def _select_odvoz(self):
-        """Počká na „Přejít k výběru řidiče“. Řádek Odvoz vozu stiskne nejvýš jednou.
+        """Klikne Odvoz vozu a počká, až bude vybraná. Tlačítko řidičů samo nestačí.
 
-        Jakmile je tlačítko na obrazovce, řádek se znovu nemačká (otevíral by info
-        o službě) a výběr se bere jako hotový i bez předpony „vybráno“.
+        Řádek se stiskne jednou. Druhý stisk vybrané kategorie otevírá info o službě.
+        Hotovo je až když popisek začíná „vybráno“ a obsahuje Odvoz vozu, nebo když
+        tlačítko samo jmenuje Odvoz vozu.
         """
         deadline = time.time() + SELECTORS.get("go_button_wait_seconds", 12)
         presses = 0
         while time.time() < deadline:
             step = selection_step(assess_category_screen(_screen_texts(self.driver)), presses)
-            if step == "done":
+            if step == "done" or self._odvoz_selected():
                 return True
             if step == "stop":
                 return False
@@ -600,13 +632,14 @@ class LiftagoDriver:
                 label = row.get_attribute("label") or ""
                 if "Pouze později" in label and "Odvoz vozu" in label:
                     return False
-                if label_is_selected_odvoz(label):
-                    return True
-                if not label.startswith("vybráno"):
+                if not label_is_selected_odvoz(label) and not label.lower().startswith("vybráno"):
                     self._press(row)
                     presses += 1
             time.sleep(1)
-        return selection_step(assess_category_screen(_screen_texts(self.driver)), presses) == "done"
+        return (
+            selection_step(assess_category_screen(_screen_texts(self.driver)), presses) == "done"
+            or self._odvoz_selected()
+        )
 
     def _collect_offers(self):
         """Počká OFFERS_WAIT s a sesbírá všechny ceny nabídek řidičů (i ty, co mezitím vyprší).
@@ -673,18 +706,14 @@ class LiftagoDriver:
             texts = self._category_texts()
             bez, _, note = parse_prices(texts)
             km, eta = parse_km(texts) or planned_km, parse_eta(texts)
-            # Řádek Odvoz vozu se stiskne nejvýš jednou. Jakmile je na obrazovce
-            # „Přejít k výběru řidiče“, stiskne se to tlačítko a jedou se nabídky.
+            # Nejdřív klik na Odvoz vozu. Tlačítko řidičů až po potvrzení výběru.
             if not self._select_odvoz():
                 self._dump_debug("go_button_missing")
                 step = assess_category_screen(_screen_texts(d))
-                if step == "select":
-                    missing = (
-                        "kategorie Odvoz vozu se nepodařilo vybrat "
-                        "(tlačítko 'Přejít k výběru řidiče' je na obrazovce, nepoužito)"
-                    )
-                elif step == "wrong_category":
+                if step == "wrong_category":
                     missing = "tlačítko 'Přejít k výběru řidiče' patří jiné kategorii"
+                elif step in ("select", "wait"):
+                    missing = "Odvoz vozu není vybraná kategorie, tlačítko 'Přejít k výběru řidiče' nepoužito"
                 else:
                     missing = "tlačítko 'Přejít k výběru řidiče' nenalezeno"
                 return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT, "note": missing}
@@ -695,10 +724,16 @@ class LiftagoDriver:
                 return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT,
                         "note": "tlačítko 'Přejít k výběru řidiče' nenalezeno"}
             go_label = go.get_attribute("label") or ""
-            if not go_label_targets_odvoz(go_label):
+            confirmed = go_label_names_odvoz(go_label) or self._odvoz_selected() or any(
+                label_is_selected_odvoz(text) for text in _screen_texts(d)
+            )
+            if go_label_names_other_category(go_label) or not confirmed or not go_label_targets_odvoz(go_label):
                 self._dump_debug("go_button_missing")
-                return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT,
-                        "note": "tlačítko 'Přejít k výběru řidiče' patří jiné kategorii"}
+                if go_label_names_other_category(go_label):
+                    refused = "tlačítko 'Přejít k výběru řidiče' patří jiné kategorii"
+                else:
+                    refused = "Odvoz vozu není vybraná kategorie, tlačítko 'Přejít k výběru řidiče' nepoužito"
+                return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT, "note": refused}
             self._press(go)
             offers_note, offers = self._collect_offers()
             self._close_offers()
