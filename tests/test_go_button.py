@@ -7,7 +7,9 @@ from pathlib import Path
 
 import mac_background
 from liftago_driver import (
+    _exact_label,
     assess_category_screen,
+    failure_line,
     go_label_targets_odvoz,
     is_order_button,
     label_is_selected_odvoz,
@@ -37,6 +39,18 @@ def _split_top(expr, op):
         i += 1
     parts.append("".join(buf))
     return parts
+
+
+class _EmptySelenium404(Exception):
+    """Stejný tvar jako TimeoutException, která v listu nechala jen 'Message:'."""
+
+    def __str__(self):
+        return (
+            "Message:\n"
+            "Stacktrace:\n"
+            "ProxyRequestError: Request failed with status code 404\n"
+            "    at WDAMacProxy.proxy\n"
+        )
 
 
 def matches(predicate, attrs):
@@ -146,11 +160,22 @@ class GoButtonTest(unittest.TestCase):
         self.assertNotIn("CGWarpMouseCursorPosition", typed)
         self.assertNotIn("entire contents", typed)
         self.assertNotIn("keystroke", typed)
-        restart = Path(ROOT / "liftago_driver.py").read_text().split("def _restart_app", 1)[1].split("def _element_names", 1)[0]
-        background = restart.split("if self._background_mode():", 1)[1].split("d.execute_script", 1)[0]
+        background = Path(ROOT / "liftago_driver.py").read_text().split("def _restart_background", 1)[1].split("def _element_names", 1)[0]
         self.assertNotIn("activateApp", background)
-        self.assertIn("launch_hidden", background)
+        self.assertNotIn("terminateApp", background)
+        self.assertNotIn("launchApp", background)
         self.assertIn("show_unfocused", background)
+
+    def test_hidden_intro_label_comes_from_the_selector(self):
+        self.assertEqual(_exact_label(self.mac["open_search"]), "Kam pojedeme?")
+
+    def test_sheet_note_keeps_the_real_404(self):
+        exc = _EmptySelenium404()
+        line = failure_line(exc)
+        note = f"CHYBA: {type(exc).__name__}: {line}"[:300]
+        self.assertEqual(line, "ProxyRequestError: Request failed with status code 404")
+        self.assertIn("404", note)
+        self.assertNotIn("Message:", note)
 
 
 if __name__ == "__main__":

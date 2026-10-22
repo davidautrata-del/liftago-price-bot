@@ -276,6 +276,17 @@ def _refuse_order(wanted):
         raise AxError("Bot nesmí stisknout Objednat")
 
 
+def element_exists(bundle_id, wanted):
+    """True, když je prvek ve oknech appky. Nic nemačká a kurzorem nehýbe."""
+    if sys.platform != "darwin" or not (wanted or "").strip():
+        return False
+    try:
+        _ax_action(bundle_id, wanted, "exists")
+    except AxError:
+        return False
+    return True
+
+
 def press(bundle_id, wanted):
     log.info("AXPress %s", (wanted or "")[:80])
     _refuse_order(wanted)
@@ -331,6 +342,8 @@ def _ax_action(bundle_id, wanted, mode, value=""):
                 ax.perform_press(node)
             elif mode == "set":
                 ax.set_value(node, value)
+            elif mode == "exists":
+                return
             else:
                 ax.focus(node)
         finally:

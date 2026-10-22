@@ -115,11 +115,63 @@ def _locator(sel):
     raise ValueError(f"Neznámý typ lokátoru: {by}")
 
 
+def _exact_label(sel):
+    """Popisek z predikátu `label == '...'`. Jinak prázdný řetězec."""
+    match = re.search(r"label == '([^']*)'", (sel or {}).get("value") or "")
+    return match.group(1) if match else ""
+
+
+def failure_line(exc):
+    """Jedna čitelná věta z výjimky. Prázdné 'Message:' ze Selenium se přeskočí."""
+    lines = []
+    seen = set()
+    current = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        lines.extend(str(current).splitlines())
+        current = current.__cause__
+    cleaned = []
+    for raw in lines:
+        line = raw.strip()
+        if not line or line in {"Message:", "Stacktrace:", "Screenshot: available via screen"}:
+            continue
+        if line.startswith("at "):
+            continue
+        if line.startswith("Message:"):
+            rest = line[len("Message:"):].strip()
+            if rest:
+                cleaned.append(rest)
+            continue
+        cleaned.append(line)
+    for line in cleaned:
+        lowered = line.lower()
+        if "404" in line or "proxyrequesterror" in lowered or "no such element" in lowered or "crashed" in lowered:
+            return line
+    if cleaned:
+        return cleaned[0]
+    return type(exc).__name__
+
+
 def _find(driver, sel, timeout=10):
+    from selenium.common.exceptions import TimeoutException
     from selenium.webdriver.support.ui import WebDriverWait
 
     loc = _locator(sel)
-    return WebDriverWait(driver, timeout).until(lambda d: d.find_element(*loc))
+    last = None
+
+    def attempt(d):
+        nonlocal last
+        try:
+            return d.find_element(*loc)
+        except Exception as exc:  # noqa: BLE001
+            last = exc
+            raise
+
+    try:
+        return WebDriverWait(driver, timeout).until(attempt)
+    except TimeoutException as exc:
+        detail = failure_line(last or exc)
+        raise TimeoutException(detail) from exc
 
 
 class LiftagoDriver:
@@ -128,6 +180,7 @@ class LiftagoDriver:
         self._user_front = None
         self._saved_window = None
         self._offscreen = False
+        self._intro_done = False
         if config.MOCK:
             return
         if self._wants_background():
@@ -232,40 +285,50 @@ class LiftagoDriver:
     def _restart_app(self):
         d = self.driver
         if config.PLATFORM == "mac":
+            if self._background_mode():
+                self._restart_background()
+                return
             bid = {"bundleId": config.LIFTAGO_BUNDLE_ID}
-            if self._background_mode() and self._saved_window is None:
-                import mac_background
-
-                self._saved_window = mac_background.window_position(config.LIFTAGO_BUNDLE_ID)
             try:
                 d.execute_script("macos: terminateApp", bid)
             except Exception:  # noqa: BLE001
                 pass
             time.sleep(1.5)
-            if self._background_mode():
-                import mac_background
-
-                mac_background.launch_hidden(config.LIFTAGO_BUNDLE_ID)
-                time.sleep(1.5)
-                self._offscreen = True
-                try:
-                    _find(d, SELECTORS["open_search"], timeout=8)
-                except Exception:  # noqa: BLE001
-                    # Vytáhnout appku dopředu by sebralo fokus a posunulo kurzor.
-                    log.info("Skrytý start ještě nevidí úvod, okno nechám v pozadí")
-                    try:
-                        mac_background.show_unfocused(config.LIFTAGO_BUNDLE_ID, self._user_front)
-                    except Exception:  # noqa: BLE001
-                        log.warning("Okno Liftaga se nepodařilo nechat v pozadí", exc_info=True)
-                    _find(d, SELECTORS["open_search"], timeout=8)
-                self._park()
-                return
             d.execute_script("macos: activateApp", bid)
         else:
             d.terminate_app(config.LIFTAGO_PACKAGE)
             time.sleep(1)
             d.activate_app(config.LIFTAGO_PACKAGE)
         time.sleep(5)
+
+    def _restart_background(self):
+        """Nechá Liftago aplikací, kterou session hledá, a nenechá ji v popředí.
+
+        Ukončení appky by session odpojilo a další hledání by šlo do Finderu (404).
+        Okno se proto neukončuje. Když ho schování skryje před hledáním, ukáže se
+        za ostatními aplikacemi a kurzor se neposouvá.
+        """
+        import mac_background
+
+        d = self.driver
+        self._offscreen = True
+        if self._saved_window is None:
+            self._saved_window = mac_background.window_position(config.LIFTAGO_BUNDLE_ID)
+        try:
+            mac_background.show_unfocused(config.LIFTAGO_BUNDLE_ID, self._user_front)
+        except Exception:  # noqa: BLE001
+            log.warning("Okno Liftaga se nepodařilo nechat v pozadí", exc_info=True)
+        try:
+            _find(d, SELECTORS["open_search"], timeout=12)
+        except Exception as first:  # noqa: BLE001
+            log.info("Skrytý start ještě nevidí úvod, okno nechám v pozadí")
+            label = _exact_label(SELECTORS["open_search"])
+            if not label or not mac_background.element_exists(config.LIFTAGO_BUNDLE_ID, label):
+                raise first
+            log.info("Úvod vidí zpřístupnění, mačkám %s bez fokusu", label)
+            mac_background.press(config.LIFTAGO_BUNDLE_ID, label)
+            self._intro_done = True
+        self._park()
 
     def _element_names(self, el):
         names = []
@@ -507,7 +570,8 @@ class LiftagoDriver:
         d = self.driver
         try:
             self._restart_app()
-            self._press(_find(d, SELECTORS["open_search"]))  # 'Kam pojedeme?'
+            if not self._intro_done:
+                self._press(_find(d, SELECTORS["open_search"]))  # 'Kam pojedeme?'
             time.sleep(1.5)
             self._press(_find(d, SELECTORS["pickup_field"]))  # adresa vyzvednutí
             time.sleep(1)

@@ -8,7 +8,7 @@ import argparse
 import logging
 
 import config
-from liftago_driver import LiftagoDriver
+from liftago_driver import LiftagoDriver, failure_line
 from routes import BUCKETS, pick_route
 from sink import write_row
 
@@ -28,7 +28,7 @@ def run(bucket=None):
     except Exception as e:  # noqa: BLE001
         from datetime import datetime
         row = [datetime.now().strftime("%Y-%m-%d %H:%M"), origin, dest, km, "", "", "",
-               f"CHYBA: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:150]}"]
+               f"CHYBA: {type(e).__name__}: {failure_line(e)}"[:300]]
         log.error("Měření selhalo: %s", e)
     finally:
         drv.close()
