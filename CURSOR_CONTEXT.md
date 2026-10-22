@@ -12,7 +12,7 @@ Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone a
 
 ## Prostředí
 - macOS, Appium 3 + driver `mac2`, Xcode (kvůli WebDriverAgentMac), Python 3.13 ve `.venv`.
-- `.env` (nevkládat do gitu): `PLATFORM=mac`, `LIFTAGO_BUNDLE_ID=com.adleritech.app.itaxipassenger`, `SHEET_ID=1B4KfTAtr59zif3DZ6WGJ2j-pNOw4MvohOABXnoZryC8`, `SHEET_TAB=Data`, `SHEET_WEBHOOK_URL=<tajné>`, `DAY_START=09:30`, `DAY_END=17:00`, `RUNS_PER_DAY=10`, `MOCK=0`.
+- `.env` (nevkládat do gitu): `PLATFORM=mac`, `LIFTAGO_BUNDLE_ID=com.adleritech.app.itaxipassenger`, `SHEET_ID=1B4KfTAtr59zif3DZ6WGJ2j-pNOw4MvohOABXnoZryC8`, `SHEET_GID=1586305980`, `SHEET_TAB=Data`, `SHEET_WEBHOOK_URL=<tajné>`, `DAY_START=09:30`, `DAY_END=17:00`, `RUNS_PER_DAY=10`, `MOCK=0`.
 - Terminálu / procesům jsou povolena Zpřístupnění a Nahrávání obrazovky.
 
 ## Soubory
@@ -24,7 +24,7 @@ Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone a
 - `parsing.py`: `parse_prices`, `parse_eta`, `parse_km`, `parse_offers`.
 - `routes.py` + `addresses.py`: pool 37 pražských adres, výběr tras podle pásem 1–3, 3–6, 6–10, 10–15, 15–20 km (OSRM, záložně haversine × 1.3).
 - `sink.py`: zápis vždy do `results.csv`, do sheetu přes Apps Script webhook (`SHEET_WEBHOOK_URL`) nebo service account. Při výpadku fronta v `state/pending_rows.jsonl`.
-- `deploy/sheet_webhook.gs`: Apps Script (doPost, přidá řádky na list Data). `deploy/install_launchd.sh install|uninstall`: běh na pozadí po přihlášení (LaunchAgent `cz.bolt.liftago-bot`, log `state/bot.log`).
+- `deploy/sheet_webhook.gs`: Apps Script (doPost, přidá řádky na list s gid 1586305980, jinak Data). `deploy/install_launchd.sh install|uninstall`: běh na pozadí po přihlášení (LaunchAgent `cz.bolt.liftago-bot`, log `state/bot.log`).
 - `inspect_ui.py`: vypíše prvky aktuální obrazovky appky (bez restartu appky). Na to se kalibrují lokátory.
 
 ## Průběh v appce (ověřeno ručně přes inspect_ui.py)
@@ -45,7 +45,7 @@ Sloupce: Date & time, From, To, Distance (km), ETA (min), Price without discount
 3. První návrh v našeptávači bývá obecná ulice bez čísla. Zvážit výběr návrhu, který nejlépe odpovídá napsané adrese.
 4. ETA občas None (kategorie "Pouze později" nebo jiný formát). Ověřit.
 5. Po relaci Appium zůstává běžet `xcodebuild` / WebDriverAgentMac a macOS hlásí "Je spuštěná automatizace". `_stop_wda()` v `close()` ho zabíjí přes `pkill -f`. Ověřit, že hláška po měření mizí a následující měření fungují.
-6. Webhook musí mít v Apps Scriptu přístup **Anyone**. "Anyone within Bolt" nefunguje, bot se nepřihlašuje. Ověřit, že se řádky skutečně objevují ve sheetu (dřívější chyba `JSONDecodeError`; `sink.py` teď loguje HTTP kód a začátek odpovědi bez URL).
+6. Webhook musí mít v Apps Scriptu přístup **Anyone**. "Anyone within Bolt" nefunguje, bot se nepřihlašuje. Po změně `deploy/sheet_webhook.gs` publikuj novou verzi stejného nasazení (URL v `.env` se nemění). Ověřit, že se řádky objevují na listu gid 1586305980 (dřívější chyba `JSONDecodeError`; `sink.py` teď loguje HTTP kód a začátek odpovědi bez URL).
 7. Běh na hlavním Macu. Výchozí je `BACKGROUND=1`: po startu relace se okno schová, akce jdou přes AXPress / nastavení hodnoty (ne myš, ne klávesy do aktivního okna) a fokus se vrací aplikaci, kterou měl uživatel otevřenou. Po měření se okno vrátí na původní místo. Plánovač i Appium jsou oddělené procesy (LaunchAgent). `BACKGROUND=0` je staré chování v popředí. Po změně kódu znovu `./deploy/install_launchd.sh install`.
 8. Volitelně přeložit texty v datech do angličtiny ("no result", "N offers").
 9. Neznámé: provozní/ToS dopad automatizace cizí appky (konzultovat interně), vytváření poptávek, které řidiči vidí, dokud se nezruší.

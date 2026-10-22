@@ -16,9 +16,12 @@ ANDROID_UDID = os.getenv("ANDROID_UDID", "")  # prázdné = první připojené z
 LIFTAGO_PACKAGE = os.getenv("LIFTAGO_PACKAGE", "")  # zjisti: adb shell pm list packages | grep -i liftago
 LIFTAGO_ACTIVITY = os.getenv("LIFTAGO_ACTIVITY", "")  # volitelné
 
-# Google Sheets (service account JSON cesta v GOOGLE_APPLICATION_CREDENTIALS)
+# Google Sheets. Webhook (SHEET_WEBHOOK_URL) je hlavní cesta; service account je záloha.
+# SHEET_GID je list z URL (?gid=). SHEET_TAB je záložní jméno, když list s tím gid není.
 SHEET_ID = os.getenv("SHEET_ID", "1B4KfTAtr59zif3DZ6WGJ2j-pNOw4MvohOABXnoZryC8")
 SHEET_TAB = os.getenv("SHEET_TAB", "Data")
+_gid = os.getenv("SHEET_GID", "1586305980").strip()
+SHEET_GID = int(_gid) if _gid else None
 
 # Plánovač
 RUNS_PER_DAY = int(os.getenv("RUNS_PER_DAY", "10"))

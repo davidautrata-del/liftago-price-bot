@@ -28,11 +28,11 @@ Texty a prvky v appce nejsou předem známé. 1) Spusť `appium` v jiném okně 
 Ceny se čtou heuristicky ze všech textů s "Kč": vyšší = bez slevy, nižší = se slevou, jedna cena = obě stejné. Pokud appka ukazuje i jiné částky, uprav `parsing.py`.
 
 ## Zápis do Google Sheetu (Apps Script webhook)
-Vždy se píše do `results.csv`. Do sheetu to jde přes webhook:
+Vždy se píše do `results.csv`. Do sheetu to jde přes webhook, na list s `gid=1586305980` (záloha je list jménem Data):
 1. Otevři sheet → Rozšíření → Apps Script, smaž obsah a vlož `deploy/sheet_webhook.gs`, ulož.
-2. Nasadit → Nové nasazení → typ Webová aplikace, Spustit jako: já, Kdo má přístup: Kdokoli → Nasadit (povol oprávnění).
-3. Zkopíruj URL webové aplikace a vlož ji do `.env` jako `SHEET_WEBHOOK_URL=...`. URL drž v tajnosti, kdo ji zná, může do sheetu psát.
-Při výpadku se řádky odešlou při dalším běhu. Alternativa je service account (`GOOGLE_APPLICATION_CREDENTIALS`).
+2. Nasazení, které už běží: Nasadit → Spravovat nasazení → tužka → Verze: Nová verze → Nasadit. URL se nemění. První nasazení: Nasadit → Nové nasazení → typ Webová aplikace, Spustit jako: já, Kdo má přístup: Kdokoli.
+3. Když v `.env` ještě není `SHEET_WEBHOOK_URL`, vlož tam URL toho nasazení. URL drž v tajnosti a necommituj `.env`.
+Při výpadku se řádky odešlou při dalším běhu. Záložní cesta je service account (`GOOGLE_APPLICATION_CREDENTIALS`), stejný sešit a stejný gid.
 
 ## Provoz
 ```bash

@@ -1,7 +1,21 @@
 // Apps Script pro Google Sheet "Liftago – monitoring cen (Odvoz vozu)".
-// Přijímá řádky od bota (HTTP POST, JSON {"rows": [[...], ...]}) a připisuje je na konec listu "Data".
+// Přijímá řádky od bota (HTTP POST, JSON {"rows": [[...], ...], "gid": 1586305980})
+// a připisuje je na list s tím gid. Když gid v sešitu není, použije list "Data".
+const SHEET_GID = 1586305980;
 const SHEET_NAME = 'Data';
 const COLUMNS = 8;
+
+function targetSheet(requestedGid) {
+  const ss = SpreadsheetApp.getActive();
+  const wanted = String(requestedGid || SHEET_GID);
+  const sheets = ss.getSheets();
+  for (let i = 0; i < sheets.length; i++) {
+    if (String(sheets[i].getSheetId()) === wanted) return sheets[i];
+  }
+  const byName = ss.getSheetByName(SHEET_NAME);
+  if (!byName) throw new Error('List gid ' + wanted + ' ani „' + SHEET_NAME + '“ nenalezen');
+  return byName;
+}
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -22,7 +36,7 @@ function doPost(e) {
       }
       return out;
     });
-    const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
+    const sh = targetSheet(body.gid);
     sh.getRange(sh.getLastRow() + 1, 1, clean.length, COLUMNS).setValues(clean);
     return reply({ ok: true, added: clean.length });
   } catch (err) {
