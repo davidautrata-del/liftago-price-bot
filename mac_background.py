@@ -11,25 +11,27 @@ import sys
 
 log = logging.getLogger("background")
 
+# Hodnoty z adres a popisků se do skriptu vkládají jen jako %%AX_ARGS%% (escapované literály).
 ACTION_SCRIPT = r'''
-on run argv
-  set bid to item 1 of argv
-  set mode to item 2 of argv
-  set wanted to item 3 of argv
+on run
+  set axArgs to {%%AX_ARGS%%}
+  set bid to item 1 of axArgs
+  set mode to item 2 of axArgs
+  set wanted to item 3 of axArgs
   tell application "System Events"
     set proc to first process whose bundle identifier is bid
     if mode is "press" then
       my pressIn(proc, wanted)
       set frontmost of proc to false
     else if mode is "set" then
-      my setIn(proc, wanted, item 4 of argv)
+      my setIn(proc, wanted, item 4 of axArgs)
       set frontmost of proc to false
     else if mode is "focus" then
       my focusIn(proc, wanted)
       set frontmost of proc to false
-      if item 4 of argv is not "" then
+      if item 4 of axArgs is not "" then
         try
-          set frontmost of (first process whose name is (item 4 of argv)) to true
+          set frontmost of (first process whose name is (item 4 of axArgs)) to true
         end try
       end if
     else if mode is "pid" then
@@ -40,22 +42,22 @@ on run argv
     else if mode is "hide" then
       set visible of proc to false
       set frontmost of proc to false
-      if item 6 of argv is not "" then
+      if item 6 of axArgs is not "" then
         try
-          set frontmost of (first process whose name is (item 6 of argv)) to true
+          set frontmost of (first process whose name is (item 6 of axArgs)) to true
         end try
       end if
     else if mode is "place" then
-      set x to (item 4 of argv) as integer
-      set y to (item 5 of argv) as integer
+      set x to (item 4 of axArgs) as integer
+      set y to (item 5 of axArgs) as integer
       set visible of proc to true
       try
         set position of window 1 of proc to {x, y}
       end try
       set frontmost of proc to false
-      if item 6 of argv is not "" then
+      if item 6 of axArgs is not "" then
         try
-          set frontmost of (first process whose name is (item 6 of argv)) to true
+          set frontmost of (first process whose name is (item 6 of axArgs)) to true
         end try
       end if
     end if
@@ -63,14 +65,16 @@ on run argv
 end run
 
 on attrText(el, kind)
-  try
-    if kind is "desc" then return description of el as text
-    if kind is "name" then return name of el as text
-    if kind is "title" then return title of el as text
-    if kind is "value" then return value of el as text
-    if kind is "id" then return (value of attribute "AXIdentifier" of el) as text
-    if kind is "role" then return role of el as text
-  end try
+  tell application "System Events"
+    try
+      if kind is "desc" then return description of el as text
+      if kind is "name" then return name of el as text
+      if kind is "title" then return title of el as text
+      if kind is "value" then return value of el as text
+      if kind is "role" then return role of el as text
+      if kind is "axid" then return (value of attribute "AXIdentifier" of el) as text
+    end try
+  end tell
   return ""
 end attrText
 
@@ -79,7 +83,7 @@ on exactMatch(el, wanted)
   if attrText(el, "desc") is wanted then return true
   if attrText(el, "name") is wanted then return true
   if attrText(el, "title") is wanted then return true
-  if attrText(el, "id") is wanted then return true
+  if attrText(el, "axid") is wanted then return true
   return false
 end exactMatch
 
@@ -195,19 +199,56 @@ class AxError(RuntimeError):
     pass
 
 
+def applescript_literal(value):
+    """Text, který smí do zdroje AppleScriptu. Čárky, uvozovky a lomítka zůstanou data."""
+    text = "" if value is None else str(value)
+    parts = []
+    buf = []
+
+    def flush():
+        if buf:
+            parts.append('"' + "".join(buf) + '"')
+            buf.clear()
+
+    for ch in text:
+        if ch == "\\":
+            buf.append("\\\\")
+        elif ch == '"':
+            buf.append('\\"')
+        elif ch in "\r\n":
+            flush()
+            parts.append("return")
+        elif ord(ch) < 32:
+            flush()
+            parts.append(f"(ASCII character {ord(ch)})")
+        else:
+            buf.append(ch)
+    flush()
+    return " & ".join(parts) if parts else '""'
+
+
+def build_script(args):
+    literals = ", ".join(f"({applescript_literal(a)})" for a in args)
+    if "%%AX_ARGS%%" not in ACTION_SCRIPT:
+        raise AxError("Šablona skriptu nemá místo pro argumenty")
+    return ACTION_SCRIPT.replace("%%AX_ARGS%%", literals, 1)
+
+
 def _run(args, timeout=45):
+    # Argumenty nejdou na příkazový řádek: osascript by je bral jako zdroj skriptu.
     proc = subprocess.run(
-        ["osascript", "-", *[str(a) for a in args]],
-        input=ACTION_SCRIPT,
-        text=True,
+        ["osascript", "-"],
+        input=build_script(args).encode("utf-8"),
         capture_output=True,
         timeout=timeout,
     )
+    out = (proc.stdout or b"").decode("utf-8", "replace")
+    err = (proc.stderr or b"").decode("utf-8", "replace")
     if proc.returncode != 0:
-        err = (proc.stderr or proc.stdout or "").strip().splitlines()
-        msg = err[-1] if err else "osascript selhal"
+        lines = (err or out).strip().splitlines()
+        msg = lines[-1] if lines else "osascript selhal"
         raise AxError(msg[:300])
-    return (proc.stdout or "").strip()
+    return out.strip()
 
 
 def frontmost_name():
