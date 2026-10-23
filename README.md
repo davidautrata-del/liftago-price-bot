@@ -18,7 +18,7 @@ Oprávnění (Nastavení systému → Soukromí a zabezpečení): povol **Zpří
 
 ## Průběh v appce, který bot dělá
 1. klik na "Kam pojedeme?", 2. změna adresy vyzvednutí, 3. zadání cíle ("Zadejte cíl jízdy") a výběr prvního návrhu, 4. popup "Pro koho je tato jízda" → Potvrdit, 5. v seznamu kategorií čte cenu (= cena bez slevy) a "za X min" jen z řádku "Odvoz vozu",
-6. označí "Odvoz vozu", klikne na "Přejít k výběru řidiče", 20 s sbírá ceny nabídek řidičů (do sloupce "Nabídky řidičů", oddělené čárkou) a obrazovku zavře tlačítkem "Zavřít". Bot nikdy neklikne na "Objednat".
+6. z popisku řádku "Odvoz vozu" vezme cenu bez slevy a ETA (`Odhad ceny 550 Kč za 18 min`) a řádek zapíše. Výběr řidiče se nehledá. Bot nikdy neklikne na "Objednat".
 
 ## Kalibrace (jednorázově, nutná)
 `inspect_ui.py` spusť na čtyřech obrazovkách (hlavní, po kliku na "Kam pojedeme?", popup, seznam kategorií) a podle výpisu uprav lokátory.

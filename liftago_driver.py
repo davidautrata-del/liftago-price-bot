@@ -191,6 +191,21 @@ def category_list_on_screen(labels):
     return any(any(marker in (label or "") for marker in markers) for label in labels)
 
 
+def odvoz_quote(text):
+    """Cena bez slevy a ETA z popisku řádku Odvoz vozu. Jinak None.
+
+    Řádek už nese odhad, třeba „Odhad ceny 550 Kč za 18 min“. Z toho se měření
+    zapíše. Samotné „Pouze později“ odhad není.
+    """
+    raw = (text or "").replace("\u00a0", " ").replace("\u202f", " ")
+    if "Odvoz vozu" not in raw or "Odhad ceny" not in raw or "Pouze později" in raw:
+        return None
+    price, _, _ = parse_prices([raw])
+    if price is None:
+        return None
+    return price, parse_eta([raw])
+
+
 def missing_odvoz_note(labels):
     """„Odvoz vozu v nabídce není“ jen když je seznam kategorií opravdu na obrazovce."""
     has_odvoz = any("Odvoz vozu" in (label or "") for label in labels)
@@ -739,8 +754,15 @@ class LiftagoDriver:
                 bez, _, _ = parse_prices(last)
                 if bez is not None:
                     time.sleep(2)  # nechat doběhnout případnou aktualizaci ceny/ETA
-                    container = row.find_element("xpath", SELECTORS.get("row_container_xpath", ".."))
-                    return self._element_texts(container)
+                    try:
+                        row = _find(self.driver, SELECTORS["category_row"], timeout=3)
+                        container = row.find_element("xpath", SELECTORS.get("row_container_xpath", ".."))
+                        refreshed = self._element_texts(container)
+                    except Exception:  # noqa: BLE001
+                        return last
+                    if parse_prices(refreshed)[0] is not None:
+                        return refreshed
+                    return last
             except Exception:  # noqa: BLE001
                 pass
             time.sleep(1.5)
@@ -855,6 +877,7 @@ class LiftagoDriver:
             return {"ts": now, "km": planned_km, "eta": random.randint(3, 15),
                     "bez": bez, "se": f"{round(bez * 0.95)}, {round(bez * 1.05)}", "note": "MOCK"}
         d = self.driver
+        seen_label = ""
         try:
             self._restart_app()
             if not self._intro_done:
@@ -871,57 +894,34 @@ class LiftagoDriver:
             if row is None:
                 return {"ts": now, "km": planned_km, "eta": None, "bez": NO_RESULT,
                         "se": NO_RESULT, "note": missing_odvoz_note(_screen_texts(d))}
-            label = row.get_attribute("label") or ""
-            if "Pouze později" in label:
+            try:
+                seen_label = row.get_attribute("label") or ""
+            except Exception as exc:  # noqa: BLE001
+                seen_label = str(exc)
+            if "Pouze později" in seen_label and "Odvoz vozu" in seen_label:
                 return {"ts": now, "km": planned_km, "eta": None, "bez": NO_RESULT,
                         "se": NO_RESULT, "note": "Odvoz vozu: pouze později"}
-            texts = self._category_texts()
-            bez, _, note = parse_prices(texts)
-            km, eta = parse_km(texts) or planned_km, parse_eta(texts)
-            # Nejdřív klik na Odvoz vozu. Chybějící prvek po Potvrdit běh neshodí.
-            try:
-                selected = self._select_odvoz()
-            except Exception as exc:  # noqa: BLE001
-                if type(exc).__name__ != "AxError":
-                    raise
-                log.info("Výběr Odvoz vozu po potvrzení adresy nedošel: %s", exc)
-                selected = False
-            if not selected:
-                self._dump_debug("go_button_missing")
-                step = assess_category_screen(_screen_texts(d))
-                if step == "wrong_category":
-                    missing = "tlačítko 'Přejít k výběru řidiče' patří jiné kategorii"
-                elif step in ("select", "wait"):
-                    missing = "Odvoz vozu není vybraná kategorie, tlačítko 'Přejít k výběru řidiče' nepoužito"
-                else:
-                    missing = "tlačítko 'Přejít k výběru řidiče' nenalezeno"
-                return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT, "note": missing}
-            try:
-                go = _find(d, SELECTORS["go_to_drivers"], timeout=SELECTORS.get("go_button_wait_seconds", 12))
-            except Exception:  # noqa: BLE001
-                self._dump_debug("go_button_missing")
-                return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT,
-                        "note": "tlačítko 'Přejít k výběru řidiče' nenalezeno"}
-            go_label = go.get_attribute("label") or ""
-            confirmed = go_label_names_odvoz(go_label) or self._odvoz_selected() or any(
-                label_is_selected_odvoz(text) for text in _screen_texts(d)
-            )
-            if go_label_names_other_category(go_label) or not confirmed or not go_label_targets_odvoz(go_label):
-                self._dump_debug("go_button_missing")
-                if go_label_names_other_category(go_label):
-                    refused = "tlačítko 'Přejít k výběru řidiče' patří jiné kategorii"
-                else:
-                    refused = "Odvoz vozu není vybraná kategorie, tlačítko 'Přejít k výběru řidiče' nepoužito"
-                return {"ts": now, "km": km, "eta": eta, "bez": bez, "se": NO_RESULT, "note": refused}
-            self._press(go)
-            offers_note, offers = self._collect_offers()
-            self._close_offers()
-            note = "; ".join(x for x in (note, offers_note) if x)
-            return {
-                "ts": now, "km": km, "eta": eta, "bez": bez,
-                "se": ", ".join(f"{p:g}" for p in offers), "note": note,
-            }
-        except Exception:
+            quote = odvoz_quote(seen_label)
+            if quote is None:
+                texts = self._category_texts()
+                seen_label = " ".join(texts) or seen_label
+                quote = odvoz_quote(seen_label)
+                if quote is None:
+                    price, _, _ = parse_prices(texts)
+                    if price is None:
+                        raise PriceNotFound(f"Cena v řádku Odvoz vozu nenalezena (texty: {texts[:6]})")
+                    quote = (price, parse_eta(texts))
+            price, eta = quote
+            log.info("Cena bez slevy %s Kč, ETA %s min", price, eta)
+            return {"ts": now, "km": planned_km, "eta": eta, "bez": price,
+                    "se": NO_RESULT, "note": ""}
+        except Exception as exc:
+            quote = odvoz_quote(seen_label) or odvoz_quote(str(exc))
+            if quote is not None:
+                price, eta = quote
+                log.info("Cena bez slevy %s Kč, ETA %s min, řádek se dál nemačká: %s", price, eta, exc)
+                return {"ts": now, "km": planned_km, "eta": eta, "bez": price,
+                        "se": NO_RESULT, "note": ""}
             config.DEBUG_DIR.mkdir(exist_ok=True)
             stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             try:

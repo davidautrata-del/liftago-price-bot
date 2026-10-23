@@ -16,6 +16,7 @@ from liftago_driver import (
     label_is_selected_odvoz,
     labels_after_marker,
     missing_odvoz_note,
+    odvoz_quote,
     selection_step,
     suggestion_target,
 )
@@ -243,6 +244,27 @@ class GoButtonTest(unittest.TestCase):
         )
         with self.assertRaises(RuntimeError):
             suggestion_target(["Objednat"], "", sel)
+
+    def test_row_estimate_is_saved_without_opening_drivers(self):
+        label = "Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 550 Kč za 18 min"
+        self.assertEqual(odvoz_quote(label), (550.0, 18))
+        stale = (
+            'StaleElementReferenceException on button "Odvoz vozu Řidič vás odveze '
+            've vašem voze Odhad ceny 550 Kč za 18 min". The view then only had '
+            "Window, FullScreenWindow, Group, Group."
+        )
+        self.assertEqual(odvoz_quote(stale), (550.0, 18))
+        self.assertEqual(
+            odvoz_quote("Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 754 Kč za ~13 min"),
+            (754.0, 13),
+        )
+        self.assertIsNone(odvoz_quote("Odvoz vozu Pouze později"))
+        self.assertIsNone(odvoz_quote("Objednat za 545 Kč"))
+        query = Path(ROOT / "liftago_driver.py").read_text().split("def query", 1)[1]
+        self.assertIn("odvoz_quote", query)
+        self.assertNotIn("_select_odvoz", query)
+        self.assertNotIn("_collect_offers", query)
+        self.assertNotIn("_press(go)", query)
 
     def test_sheet_note_keeps_the_real_404(self):
         exc = _EmptySelenium404()
