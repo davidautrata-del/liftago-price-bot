@@ -2,13 +2,13 @@
 
 Použití:
   python run_once.py                 # náhodná trasa
-  python run_once.py --bucket 2      # pásmo 6-10 km (0..4)
+  python run_once.py --bucket 2      # pásmo 6-10 km (indexy 0..6)
 """
 import argparse
 import logging
 
 import config
-from liftago_driver import LiftagoDriver
+from liftago_driver import LiftagoDriver, failure_line
 from routes import BUCKETS, pick_route
 from sink import write_row
 
@@ -19,6 +19,8 @@ log = logging.getLogger("run_once")
 def run(bucket=None):
     origin, dest, km = pick_route(bucket)
     log.info("Trasa: %s -> %s (%.1f km)", origin, dest, km)
+    if config.PLATFORM == "mac":
+        log.info("Pozadí (bez myši a bez fokusu): %s", "ano" if config.BACKGROUND else "ne")
     drv = LiftagoDriver()
     try:
         r = drv.query(origin, dest, km)
@@ -26,7 +28,7 @@ def run(bucket=None):
     except Exception as e:  # noqa: BLE001
         from datetime import datetime
         row = [datetime.now().strftime("%Y-%m-%d %H:%M"), origin, dest, km, "", "", "",
-               f"CHYBA: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:150]}"]
+               f"CHYBA: {type(e).__name__}: {failure_line(e)}"[:300]]
         log.error("Měření selhalo: %s", e)
     finally:
         drv.close()

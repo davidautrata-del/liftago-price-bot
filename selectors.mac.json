@@ -18,7 +18,10 @@
   },
   "first_suggestion": {
     "by": "xpath",
-    "value": "(//XCUIElementTypeButton[@label='Vybrat na mapě']/following::XCUIElementTypeButton)[1]"
+    "value": "(//XCUIElementTypeButton[@label='Vybrat na mapě']/following::XCUIElementTypeButton)[1]",
+    "ax_after": "Vybrat na mapě",
+    "ax_role": "AXButton",
+    "ax_nth": 1
   },
   "confirm_pickup": {
     "by": "predicate",
@@ -31,14 +34,21 @@
   },
   "category_row": {
     "by": "predicate",
-    "value": "label CONTAINS 'Odvoz vozu Řidič'"
+    "value": "label CONTAINS 'Odvoz vozu Řidič'",
+    "ax_title": "Odvoz vozu",
+    "ax_context": "Řidič vás odveze"
   },
   "row_container_xpath": ".",
   "more_categories": {"by": "predicate", "value": "label ENDSWITH ' další'"},
+  "category_selected": {
+    "by": "predicate",
+    "value": "label BEGINSWITH 'vybráno' AND label CONTAINS 'Odvoz vozu'"
+  },
   "go_to_drivers": {
     "by": "predicate",
-    "value": "label BEGINSWITH 'Přejít k výběru řidiče' AND label ENDSWITH 'Odvoz vozu'"
+    "value": "label BEGINSWITH 'Přejít k výběru řidiče'"
   },
+  "go_button_wait_seconds": 12,
   "offers_wait_seconds": 20,
   "close_offers": {
     "by": "id",

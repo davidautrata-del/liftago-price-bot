@@ -7,6 +7,9 @@
   "first_suggestion": {"by": "xpath", "value": "(//android.view.ViewGroup)[1]"},
   "confirm_popup": {"by": "text", "value": "Potvrdit"},
   "category_row": {"by": "textcontains", "value": "Odvoz vozu"},
+  "category_selected": {"by": "textcontains", "value": "vybráno"},
+  "go_to_drivers": {"by": "textcontains", "value": "Přejít k výběru řidiče"},
+  "go_button_wait_seconds": 12,
   "row_container_xpath": "..",
   "price_wait_seconds": 30
 }

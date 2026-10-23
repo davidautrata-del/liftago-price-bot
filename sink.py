@@ -25,6 +25,14 @@ def _write_csv(row):
         w.writerow(row)
 
 
+def webhook_payload(rows):
+    """Tělo pro Apps Script. gid vybere list; staré nasazení pole ignoruje a píše na Data."""
+    body = {"rows": rows}
+    if config.SHEET_GID is not None:
+        body["gid"] = config.SHEET_GID
+    return body
+
+
 def _worksheet():
     import gspread  # import až tady, ať mock režim funguje bez něj
 
@@ -32,7 +40,13 @@ def _worksheet():
     if not creds:
         raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS není nastavené")
     gc = gspread.service_account(filename=creds)
-    return gc.open_by_key(config.SHEET_ID).worksheet(config.SHEET_TAB)
+    spreadsheet = gc.open_by_key(config.SHEET_ID)
+    if config.SHEET_GID is not None:
+        try:
+            return spreadsheet.get_worksheet_by_id(config.SHEET_GID)
+        except gspread.exceptions.WorksheetNotFound:
+            log.warning("List gid=%s v sešitu není, používám jméno %s", config.SHEET_GID, config.SHEET_TAB)
+    return spreadsheet.worksheet(config.SHEET_TAB)
 
 
 def _load_pending():
@@ -44,7 +58,7 @@ def _load_pending():
 def _push_webhook(rows):
     import requests
 
-    r = requests.post(os.environ["SHEET_WEBHOOK_URL"], json={"rows": rows}, timeout=30)
+    r = requests.post(os.environ["SHEET_WEBHOOK_URL"], json=webhook_payload(rows), timeout=30)
     r.raise_for_status()
     try:
         data = r.json()

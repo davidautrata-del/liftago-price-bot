@@ -1,4 +1,4 @@
-"""Výběr tras 1-20 km. Délka se počítá přes OSRM (silniční), záloha haversine * 1.3."""
+"""Výběr tras 1-30 km. Délka se počítá přes OSRM (silniční), záloha haversine * 1.3."""
 import itertools
 import json
 import math
@@ -11,8 +11,9 @@ import requests
 from addresses import ADDRESSES
 
 CACHE_FILE = Path(__file__).parent / "state" / "route_cache.json"
-# Cílová pásma délky (km). Střídají se, aby data pokryla celý rozsah 1-20 km.
-BUCKETS = [(1, 3), (3, 6), (6, 10), (10, 15), (15, 20)]
+# Cílová pásma délky (km). Kratší zůstávají, další dvě pokryjí rozsah až do 30 km.
+MAX_KM = 30
+BUCKETS = [(1, 3), (3, 6), (6, 10), (10, 15), (15, 20), (20, 25), (25, MAX_KM)]
 
 
 def haversine_km(a, b):
@@ -71,9 +72,9 @@ def pick_route(bucket_index=None, rng=random):
         km = road_km(a[1:], b[1:])
         if lo <= km < hi:
             return a[0], b[0], km
-    # nic nenalezeno: vezmi libovolnou dvojici do 20 km
+    # nic nenalezeno: vezmi libovolnou dvojici do 30 km
     for a, b in pairs:
         km = road_km(a[1:], b[1:])
-        if 1 <= km <= 20:
+        if 1 <= km <= MAX_KM:
             return a[0], b[0], km
     raise RuntimeError("Nepodařilo se vybrat trasu")

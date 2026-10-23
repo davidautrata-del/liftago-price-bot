@@ -3,7 +3,7 @@
 Otevři ve Cursoru složku `~/Documents/liftago-price-bot` a řekni mu: "Přečti CURSOR_CONTEXT.md a pokračuj podle sekce Co zbývá."
 
 ## Cíl
-Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone appka z App Store, běží na Macu s Apple Silicon) kategorii **"Odvoz vozu"** a náhodnou pražskou trasu 1–20 km. Přečte cenu, ETA a ceny nabídek řidičů a zapíše řádek do Google Sheetu.
+Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone appka z App Store, běží na Macu s Apple Silicon) kategorii **"Odvoz vozu"** a náhodnou pražskou trasu 1–30 km. Přečte cenu, ETA a ceny nabídek řidičů a zapíše řádek do Google Sheetu.
 
 ## Pravidla (nesmí se porušit)
 - Bot **nikdy neklikne na "Objednat"**. Poptávku po přečtení nabídek zruší (Zavřít → Zrušit jízdu).
@@ -12,7 +12,7 @@ Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone a
 
 ## Prostředí
 - macOS, Appium 3 + driver `mac2`, Xcode (kvůli WebDriverAgentMac), Python 3.13 ve `.venv`.
-- `.env` (nevkládat do gitu): `PLATFORM=mac`, `LIFTAGO_BUNDLE_ID=com.adleritech.app.itaxipassenger`, `SHEET_ID=1B4KfTAtr59zif3DZ6WGJ2j-pNOw4MvohOABXnoZryC8`, `SHEET_TAB=Data`, `SHEET_WEBHOOK_URL=<tajné>`, `DAY_START=09:30`, `DAY_END=17:00`, `RUNS_PER_DAY=10`, `MOCK=0`.
+- `.env` (nevkládat do gitu): `PLATFORM=mac`, `LIFTAGO_BUNDLE_ID=com.adleritech.app.itaxipassenger`, `SHEET_ID=1B4KfTAtr59zif3DZ6WGJ2j-pNOw4MvohOABXnoZryC8`, `SHEET_GID=1586305980`, `SHEET_TAB=Data`, `SHEET_WEBHOOK_URL=<tajné>`, `DAY_START=09:30`, `DAY_END=17:00`, `RUNS_PER_DAY=10`, `MOCK=0`.
 - Terminálu / procesům jsou povolena Zpřístupnění a Nahrávání obrazovky.
 
 ## Soubory
@@ -22,31 +22,31 @@ Bot 10x denně (09:30–17:00, rovnoměrně) zadá v appce **Liftago** (iPhone a
 - `selectors.mac.json`: všechny lokátory pro Mac (predicate / xpath / id). **V NSPredicate nelze použít atribut `type`**, jen `label`, `title`, `value`, `identifier`, `elementType`.
 - `selectors.json`: Android (neověřeno).
 - `parsing.py`: `parse_prices`, `parse_eta`, `parse_km`, `parse_offers`.
-- `routes.py` + `addresses.py`: pool 37 pražských adres, výběr tras podle pásem 1–3, 3–6, 6–10, 10–15, 15–20 km (OSRM, záložně haversine × 1.3).
+- `routes.py` + `addresses.py`: pool 37 pražských adres, výběr tras podle pásem 1–3, 3–6, 6–10, 10–15, 15–20, 20–25, 25–30 km (OSRM, záložně haversine × 1.3).
 - `sink.py`: zápis vždy do `results.csv`, do sheetu přes Apps Script webhook (`SHEET_WEBHOOK_URL`) nebo service account. Při výpadku fronta v `state/pending_rows.jsonl`.
-- `deploy/sheet_webhook.gs`: Apps Script (doPost, přidá řádky na list Data). `deploy/install_launchd.sh install|uninstall`: běh na pozadí po přihlášení (LaunchAgent `cz.bolt.liftago-bot`, log `state/bot.log`).
+- `deploy/sheet_webhook.gs`: Apps Script (doPost, přidá řádky na list s gid 1586305980, jinak Data). `deploy/install_launchd.sh install|uninstall`: běh na pozadí po přihlášení (LaunchAgent `cz.bolt.liftago-bot`, log `state/bot.log`).
 - `inspect_ui.py`: vypíše prvky aktuální obrazovky appky (bez restartu appky). Na to se kalibrují lokátory.
 
 ## Průběh v appce (ověřeno ručně přes inspect_ui.py)
 1. Úvodní obrazovka: tlačítko `Kam pojedeme?`.
-2. Obrazovka "Zadejte trasu": dvě `XCUIElementTypeTextField` (`Nástupní adresa`, `Cílová adresa`). Pickup se musí změnit, výchozí je aktuální poloha. Po napsání adresy jsou návrhy tlačítka za `Vybrat na mapě` (bere se první).
+2. Obrazovka "Zadejte trasu": dvě `XCUIElementTypeTextField` (`Nástupní adresa`, `Cílová adresa`). Pickup se musí změnit, výchozí je aktuální poloha. Po napsání adresy jsou návrhy tlačítka za `Vybrat na mapě`. Bere se návrh, jehož vlastní název je zadané místo (`OC Letňany`), ne provozovna, která tu adresu jen obsahuje (`Bistro DELMART …`). První prázdné tlačítko za značkou se nepoužije.
 3. **Mezikroky, které se objeví jen u některých adres (oblasti s pevnými body):** tlačítko `Potvrdit adresu vyzvednutí` po výběru pickupu a `Potvrdit cíl jízdy` po výběru cíle (selektor `confirm_dropoff` je zatím odhad, neověřený).
 4. Popup `Pro koho je tato jízda?` → tlačítko `Potvrdit` (volitelný).
-5. Seznam kategorií. Řádek "Odvoz vozu" je tlačítko s popiskem `Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 550 Kč za 6 min`. Pokud už je vybraný, je to `Other` s popiskem začínajícím `vybráno`. Klepnutí na vybranou kategorii otevře info o službě, proto se neklikne. Kategorie může být schovaná pod tlačítkem `X další`. Může mít `Pouze později` (nedostupná) nebo v seznamu chybět → do sloupců se zapíše `žádný výsledek`. Cena v seznamu = **"Cena bez slevy"**.
-6. Klik na `Přejít k výběru řidiče · Odvoz vozu` (popisek musí být přesně takto). Bot čeká 20 s, sbírá všechny ceny nabídek (`Příjezd`, `Fixní cena`, `545 Kč`, tlačítko `Objednat` se nekliká). Ceny jdou do sloupce "Driver offers (CZK)" oddělené čárkou.
+5. Seznam kategorií. Řádek "Odvoz vozu" je tlačítko s popiskem `Odvoz vozu Řidič vás odveze ve vašem voze Odhad ceny 550 Kč za 6 min`. Uvnitř je text jen `Odvoz vozu`. Pokud už je vybraný, je to `Other` s popiskem začínajícím `vybráno`. Klepnutí na vybranou kategorii otevře info o službě, proto se neklikne. Kategorie může být schovaná pod tlačítkem `X další`. Může mít `Pouze později` (nedostupná) nebo v seznamu chybět → do sloupců se zapíše `žádný výsledek`. Cena v seznamu = **"Cena bez slevy"**.
+6. Když popisek řádku už obsahuje odhad (`Odhad ceny 550 Kč za 18 min`), zapíše se cena bez slevy a ETA a měření skončí. Výběr řidiče se nehledá. Zmizelý nebo prošlý řádek po tom odhadu běh neshodí. `Objednat` se nekliká.
 7. Zavření: `button.close` (Zavřít) → karta s tlačítkem `Zrušit jízdu` (xpath na Button). Po zrušení se nic dalšího nezobrazí.
 
 ## Sheet
 Sloupce: Date & time, From, To, Distance (km), ETA (min), Price without discount (CZK), Driver offers (CZK), Note. Texty v datech jsou česky ("žádný výsledek", "N nabídek").
 
 ## Známé problémy a co zbývá
-1. **9:49 22. 10.: tlačítko "Přejít k výběru řidiče · Odvoz vozu" nenalezeno** (do 6 s po výběru kategorie). Zjisti důvod z `debug/*_go_button_missing.xml/png`, případně prodluž čekání nebo oprav selektor.
+1. **Cena bez slevy stačí.** Odhad je v popisku řádku Odvoz vozu (`Odhad ceny 550 Kč za 18 min`). Ten se zapíše a běh skončí. Výběr řidiče se dál nehledá. Prošlý klik na dlouhé tlačítko s cenou (23. 10. 10:21, `StaleElementReferenceException`) měření neshodí, když ten popisek odhad už obsahuje.
 2. Ověřit selektor `confirm_dropoff` (`Potvrdit cíl jízdy`) na adresách v polygonech (Václavské náměstí, Hlavní nádraží).
 3. První návrh v našeptávači bývá obecná ulice bez čísla. Zvážit výběr návrhu, který nejlépe odpovídá napsané adrese.
 4. ETA občas None (kategorie "Pouze později" nebo jiný formát). Ověřit.
 5. Po relaci Appium zůstává běžet `xcodebuild` / WebDriverAgentMac a macOS hlásí "Je spuštěná automatizace". `_stop_wda()` v `close()` ho zabíjí přes `pkill -f`. Ověřit, že hláška po měření mizí a následující měření fungují.
-6. Webhook musí mít v Apps Scriptu přístup **Anyone**. "Anyone within Bolt" nefunguje, bot se nepřihlašuje. Ověřit, že se řádky skutečně objevují ve sheetu (dřívější chyba `JSONDecodeError`; `sink.py` teď loguje HTTP kód a začátek odpovědi bez URL).
-7. Běh na pozadí na hlavním Macu ruší práci (okno appky se otevírá). Alternativy: samostatný Mac, nebo Android emulátor bez okna (`PLATFORM=android`, `selectors.json` je potřeba zkalibrovat, Liftago může emulátor blokovat).
+6. Webhook musí mít v Apps Scriptu přístup **Anyone**. "Anyone within Bolt" nefunguje, bot se nepřihlašuje. Po změně `deploy/sheet_webhook.gs` publikuj novou verzi stejného nasazení (URL v `.env` se nemění). Ověřit, že se řádky objevují na listu gid 1586305980 (dřívější chyba `JSONDecodeError`; `sink.py` teď loguje HTTP kód a začátek odpovědi bez URL).
+7. Běh na hlavním Macu. Výchozí je `BACKGROUND=1`: po startu relace se okno schová, akce jdou přes AXPress / nastavení hodnoty (ne myš, ne klávesy do aktivního okna, kurzor se nevrací zpět) a fokus se vrací aplikaci, kterou měl uživatel otevřenou. Skrytý běh Liftago neukončuje (ani při zavření relace), jinak další hledání míří do Finderu a vrátí 404. Atributy zpřístupnění se předávají jako text AXWindows, ne jako neexportovaný symbol. Když úvod není vidět, okno se ukáže za ostatními aplikacemi a nenechá se v popředí. Po měření se okno vrátí na původní místo. Plánovač i Appium jsou oddělené procesy (LaunchAgent). `BACKGROUND=0` je staré chování v popředí. Po změně kódu znovu `./deploy/install_launchd.sh install`.
 8. Volitelně přeložit texty v datech do angličtiny ("no result", "N offers").
 9. Neznámé: provozní/ToS dopad automatizace cizí appky (konzultovat interně), vytváření poptávek, které řidiči vidí, dokud se nezruší.
 
